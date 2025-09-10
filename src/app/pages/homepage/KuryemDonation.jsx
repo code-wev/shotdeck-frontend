@@ -148,7 +148,7 @@ export default function KuryemDonation() {
             <div className='mt-8'>
               <h4 className='birthstone text-lg'>One-time, monthly or yearly</h4>
               <button
-                className="encode py-2 px-12 text-xl flex gap-4 items-center mt-2 rounded text-white bg-[#30CAFE]"
+                className="encode py-2 cursor-pointer px-12 text-xl flex gap-4 items-center mt-2 rounded text-white bg-[#30CAFE]"
                 style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.5)' }}
               >
                 <span>Donate With</span>
@@ -159,7 +159,7 @@ export default function KuryemDonation() {
             <div className='mt-8'>
               <h4 className='birthstone text-lg'>One-time, monthly or yearly</h4>
               <button
-                className="encode py-2 px-8 text-xl flex gap-4 items-center mt-2 rounded text-white bg-[#30CAFE]"
+                className="encode cursor-pointer py-2 px-8 text-xl flex gap-4 items-center mt-2 rounded text-white bg-[#30CAFE]"
                 style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.5)' }}
               >
                 <span>Donate With</span>

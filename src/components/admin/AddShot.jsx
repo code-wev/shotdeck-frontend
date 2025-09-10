@@ -1083,7 +1083,7 @@ useEffect(() => {
   );
 
   return (
-    <div className="min-h-screen  pt-8 flex items-center justify-center bg-gray-900 overflow-hidden  mx-auto">
+    <div className="min-h-screen max-w-[3000px]  pt-8 flex items-center justify-center bg-gray-900 overflow-hidden  mx-auto">
       <div className="w-full my-auto mx-auto">
         <form onSubmit={(e) => {
     e.preventDefault(); // First prevent default
