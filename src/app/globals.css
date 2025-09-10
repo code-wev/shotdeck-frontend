@@ -1,0 +1,424 @@
+@import url('https://fonts.googleapis.com/css2?family=Birthstone&family=Encode+Sans+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Encode+Sans:wght@100..900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Montserrat", sans-serif;
+}
+
+.bg-primary{
+  background-color: #171717;
+}
+
+.bg-secondary{
+  background-color: #0a0a0a;
+}
+
+.text-primary{
+  color: #31caff;
+}
+.text-secondary{
+  color: #999;
+}
+.hover-primary:hover{
+ color: #31caff;
+}
+
+.font-heading{
+  font-size: 32px;
+}
+.font-sub-heading{
+  font-size: 16px;
+}
+
+
+.font-md{
+  font-size: 18px;
+}
+
+.font-sub-md{
+  font-size: 15px;
+}
+
+/* From Uiverse.io by mobinkakei */ 
+.wrapper {
+  width: 120px;
+  height: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.circle {
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  border-radius: 50%;
+  background-color: #fff;
+  left: 15%;
+  transform-origin: 50%;
+  animation: circle7124 .5s alternate infinite ease;
+}
+
+@keyframes circle7124 {
+  0% {
+    top: 60px;
+    height: 5px;
+    border-radius: 50px 50px 25px 25px;
+    transform: scaleX(1.7);
+  }
+
+  40% {
+    height: 10px;
+    border-radius: 50%;
+    transform: scaleX(1);
+  }
+
+  100% {
+    top: 0%;
+  }
+}
+
+.circle:nth-child(2) {
+  left: 45%;
+  animation-delay: .2s;
+}
+
+.circle:nth-child(3) {
+  left: auto;
+  right: 15%;
+  animation-delay: .3s;
+}
+
+/* .shadow {
+  width: 20px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgba(0,0,0,0.9);
+  position: absolute;
+  top: 62px;
+  transform-origin: 50%;
+  z-index: -1;
+  left: 15%;
+  filter: blur(1px);
+  animation: shadow046 .5s alternate infinite ease;
+} */
+
+@keyframes shadow046 {
+  0% {
+    transform: scaleX(1.5);
+  }
+
+  40% {
+    transform: scaleX(1);
+    opacity: .7;
+  }
+
+  100% {
+    transform: scaleX(.2);
+    opacity: .4;
+  }
+}
+
+.shadow:nth-child(4) {
+  left: 45%;
+  animation-delay: .2s
+}
+
+.shadow:nth-child(5) {
+  left: auto;
+  right: 15%;
+  animation-delay: .3s;
+}
+
+
+.birthstone{
+    font-family: "Birthstone", cursive;
+}
+
+.encode-sans {
+  font-family: "Encode Sans Condensed", sans-serif;
+   font-weight: 900;
+  font-style: normal;
+
+}
+.encode {
+  font-family: "Encode Sans Condensed", sans-serif;
+ 
+
+}
+
+.encode-only {
+  font-family: "Encode Sans", sans-serif;
+
+}
+
+
+/* From Uiverse.io by Smit-Prajapati */ 
+.loader {
+  --size: 250px;
+  --duration: 2s;
+  --logo-color: grey;
+  --background: linear-gradient(
+    0deg,
+    rgba(50, 50, 50, 0.2) 0%,
+    rgba(100, 100, 100, 0.2) 100%
+  );
+  height: var(--size);
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.loader .box {
+  position: absolute;
+  background: rgba(100, 100, 100, 0.15);
+  background: var(--background);
+  border-radius: 50%;
+  border-top: 1px solid rgba(100, 100, 100, 1);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 10px 10px -0px;
+  backdrop-filter: blur(5px);
+  animation: ripple var(--duration) infinite ease-in-out;
+}
+
+.loader .box:nth-child(1) {
+  inset: 40%;
+  z-index: 99;
+}
+
+.loader .box:nth-child(2) {
+  inset: 30%;
+  z-index: 98;
+  border-color: rgba(100, 100, 100, 0.8);
+  animation-delay: 0.2s;
+}
+
+.loader .box:nth-child(3) {
+  inset: 20%;
+  z-index: 97;
+  border-color: rgba(100, 100, 100, 0.6);
+  animation-delay: 0.4s;
+}
+
+.loader .box:nth-child(4) {
+  inset: 10%;
+  z-index: 96;
+  border-color: rgba(100, 100, 100, 0.4);
+  animation-delay: 0.6s;
+}
+
+.loader .box:nth-child(5) {
+  inset: 0%;
+  z-index: 95;
+  border-color: rgba(100, 100, 100, 0.2);
+  animation-delay: 0.8s;
+}
+
+.loader .logo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: 30%;
+}
+
+.loader .logo svg {
+  fill: var(--logo-color);
+  width: 100%;
+  animation: color-change var(--duration) infinite ease-in-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 10px 10px -0px;
+  }
+  50% {
+    transform: scale(1.3);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 30px 20px -0px;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 10px 10px -0px;
+  }
+}
+
+@keyframes color-change {
+  0% {
+    fill: var(--logo-color);
+  }
+  50% {
+    fill: white;
+  }
+  100% {
+    fill: var(--logo-color);
+  }
+}
+
+#smooth-wrapper {
+  overflow: hidden;
+}
+
+#smooth-content {
+  will-change: transform;
+}
+
+
+
+.cards {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+	padding: 0 20px;
+	margin: 200px 0 400px 0;
+}
+
+/* ---------- card styles ---------- */
+.card {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 4/3;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.card-cover-container {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	z-index: 1;
+}
+
+.card-cover {
+	width: 100%;
+	height: 200%;
+	object-fit: cover;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+.underline-spaced {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* For Webkit browsers */
+.scrollbar-hide::-webkit-scrollbar {
+  height: 8px;
+  width: 6px;
+}
+
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: #374151;
+  border-radius: 10px;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 10px;
+}
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 10px;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+}
+
+
+
+
+.scrollbar-thin-gray::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin-gray::-webkit-scrollbar-thumb {
+  background-color: #9ca3af; /* gray-400 */
+  border-radius: 9999px;
+}
+
+.scrollbar-thin-gray::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+
+.container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.container .checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.scroll-container {
+  transition: scroll-left 0.6s ease-out;
+}
+
+.scroll-item {
+  scroll-snap-align: start;
+}
+
+input[type="range"].triangle-slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 0;
+  width: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid white;
+  margin-top: 12px;
+  cursor: pointer;
+  background: transparent;
+}
+
+input[type="range"].triangle-slider::-moz-range-thumb {
+  height: 0;
+  width: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid white;
+  cursor: pointer;
+  background: transparent;
+  appearance: none;
+}
+
+
+/* transiaiton of kuryem er special dibba */
+.transition-all {
+  transition-property: all;
+  will-change: transform, opacity, height;
+}
+
+
+/* ::selection {
+  background: linear-gradient(90deg, #31caff, #007bff);
+  color: #ffffff;
+  text-shadow: 0 0 5px #00e0ff, 0 0 10px #00e0ff;
+  font-style: italic;
+  font-weight: 600;
+} */
+

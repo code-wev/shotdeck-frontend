@@ -1,0 +1,70 @@
+<div id="zigzag-container" style="position: relative; width: 100%; height: 5800px; background: transparent;">
+<svg id="zigzag-line" width="1600" height="5800" style="position: absolute; top: 0; left: 0; background: transparent;">
+<style>
+      .cls-1 {
+        fill: none;
+        stroke: #ef7d00;
+        stroke-miterlimit: 10;
+        stroke-width: 13px;
+        stroke-dasharray: 12000;
+        stroke-dashoffset: 12000;
+      }
+</style>
+<polyline class="cls-1" points="788.29 0 788.29 377.48 46.34 377.48 46.34 958.37 882.03 959.42 880.99 1099.92 6.5 1099.92 6.5 1956.58 975.35 1956.58 975.35 2115.96 1543.66 2115.96 1543.66 2606.68 960.67 2606.68 960.67 2787.03 960.67 3353.24 1526.89 3353.24 1526.89 4091.42 157.49 4091.42 157.49 4783.46 1543.66 4783.46 1543.66 5129.48 775.08 5129.48 761.45 5693.34"/>
+</svg>
+</div>
+ 
+<script>
+  const polyline = document.querySelector('.cls-1');
+  const container = document.getElementById('zigzag-container');
+  const maxOffset = 12000;
+  let currentOffset = maxOffset;
+  let animationStarted = false;
+  let scrollingAnimationFrame;
+
+  // Set the line to be hidden initially
+  polyline.style.strokeDashoffset = maxOffset;
+
+  function isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  }
+
+  function isElementCompletelyOutOfView(el) {
+    const rect = el.getBoundingClientRect();
+    return rect.bottom <= 0 || rect.top >= window.innerHeight;
+  }
+
+  function updateStroke() {
+    if (!animationStarted) return;
+
+    const scrollTop = window.scrollY;
+    const containerTop = container.offsetTop;
+    const containerHeight = container.offsetHeight;
+    const windowHeight = window.innerHeight;
+
+    const scrollProgress = (scrollTop + windowHeight - containerTop) / (containerHeight + windowHeight);
+    const clampedProgress = Math.min(Math.max(scrollProgress, 0), 5);
+    const targetOffset = maxOffset - (clampedProgress * maxOffset);
+
+    currentOffset += (targetOffset - currentOffset) * 0.05;
+    polyline.style.strokeDashoffset = currentOffset;
+
+    scrollingAnimationFrame = requestAnimationFrame(updateStroke);
+  }
+
+  window.addEventListener('scroll', function () {
+    if (isElementInViewport(container)) {
+      if (!animationStarted) {
+        animationStarted = true;
+        scrollingAnimationFrame = requestAnimationFrame(updateStroke);
+      }
+    } else if (isElementCompletelyOutOfView(container)) {
+      // Reset if it's fully off-screen (like when user scrolls to top)
+      animationStarted = false;
+      cancelAnimationFrame(scrollingAnimationFrame);
+      currentOffset = maxOffset;
+      polyline.style.strokeDashoffset = maxOffset;
+    }
+  });
+</script>

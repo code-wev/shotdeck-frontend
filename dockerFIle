@@ -1,0 +1,25 @@
+FROM node:22
+
+# Install system dependencies: python3, ffmpeg, curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip ffmpeg curl && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
+# Install yt-dlp via pip3 globally
+RUN pip3 install yt-dlp
+
+# Create a symlink to make yt-dlp accessible system-wide
+RUN ln -s /usr/local/bin/yt-dlp /usr/bin/yt-dlp
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

@@ -1,0 +1,28 @@
+'Log files:
+C:\project\SHOTDECK\frontend\shotdeck\UsersmynameAppDataRoamingnpm-cache\_logs\2025-05-20T12_25_57_706Z-debug-0.log
+
+# npm resolution error report
+
+While resolving: @toolpad/core@0.15.0
+Found: react-router@6.22.0
+node_modules/react-router
+  react-router@"6.22.0" from react-router-dom@6.22.0
+  node_modules/react-router-dom
+    react-router-dom@"6.22.0" from @mui/toolpad@0.1.51
+    node_modules/@mui/toolpad
+      @mui/toolpad@"^0.1.51" from the root project
+
+Could not resolve dependency:
+peerOptional react-router@"^7" from @toolpad/core@0.15.0
+node_modules/@toolpad/core
+  @toolpad/core@"^0.15.0" from the root project
+
+Conflicting peer dependency: react-router@7.6.0
+node_modules/react-router
+  peerOptional react-router@"^7" from @toolpad/core@0.15.0
+  node_modules/@toolpad/core
+    @toolpad/core@"^0.15.0" from the root project
+
+Fix the upstream dependency conflict, or retry
+this command with --force or --legacy-peer-deps
+to accept an incorrect (and potentially broken) dependency resolution.
