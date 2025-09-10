@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaHeart, FaEnvelope, FaWhatsapp } from 'react-icons/fa';
 import { GiFilmProjector } from 'react-icons/gi';
+import { useGetSettingQuery } from '@/redux/api/shot';
 
 
 const Donation = () => {
@@ -11,6 +12,8 @@ const Donation = () => {
   const [email, setEmail]  = useState('')
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const {data} = useGetSettingQuery();
+  console.log(data, "This is data magoma")
 
 const handleSubmit = async (e) => {
   e.preventDefault();

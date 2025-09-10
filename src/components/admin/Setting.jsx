@@ -17,17 +17,25 @@ export default function Settings() {
   const REGION_PREFIX = "";
   const PULL_BASE = "storage.bunnycdn.com" || "";
 
-  // Initialize state with default values or prevSettings, using schema field names
+  // Initialize state with default values or prevSettings
   const [settings, setSettings] = useState({
-    websiteName: prevSettings?.websiteName || 'My Website',
+    websiteName: '',
     logo: null,
-    logoPreview: prevSettings?.logo || '',
+    logoPreview: '',
     coverphoto: [],
-    coverphotoPreviews: prevSettings?.coverphoto || [],
-    coverHeading: prevSettings?.coverHeading || '',
-    coverDescription: prevSettings?.coverDescription || '',
-    footerText: prevSettings?.footerText || '',
-    contactEmail: prevSettings?.contactEmail || 'contact@example.com',
+    coverphotoPreviews: [],
+    coverHeading: '',
+    coverDescription: '',
+    footerText: '',
+    contactEmail: '',
+    donationImages: [],
+    donationImagePreviews: [],
+    donationHeading: '',
+    donationDescription: '',
+    sponsorImages: [],
+    sponsorImagePreviews: [],
+    sponsorHeading: '',
+    sponsorDescription: '',
   });
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -35,18 +43,25 @@ export default function Settings() {
   // Update settings when prevSettings changes
   useEffect(() => {
     if (prevSettings) {
-      setSettings((prev) => ({
-        ...prev,
-        websiteName: prevSettings.websiteName || prev.websiteName,
-        logo: null, // File inputs can't be pre-set for security reasons
-        logoPreview: prevSettings.logo || prev.logoPreview,
-        coverphoto: [], // File inputs can't be pre-set
-        coverphotoPreviews: prevSettings.coverphoto || prev.coverphotoPreviews,
-        coverHeading: prevSettings.coverHeading || prev.coverHeading,
-        coverDescription: prevSettings.coverDescription || prev.coverDescription,
-        footerText: prevSettings.footerText || prev.footerText,
-        contactEmail: prevSettings.contactEmail || prev.contactEmail,
-      }));
+      setSettings({
+        websiteName: prevSettings.websiteName || 'My Website',
+        logo: null,
+        logoPreview: prevSettings.logo || '',
+        coverphoto: [],
+        coverphotoPreviews: prevSettings.coverphoto || [],
+        coverHeading: prevSettings.coverHeading || '',
+        coverDescription: prevSettings.coverDescription || '',
+        footerText: prevSettings.footerText || '',
+        contactEmail: prevSettings.contactEmail || 'contact@example.com',
+        donationImages: [],
+        donationImagePreviews: prevSettings.donation || [],
+        donationHeading: prevSettings.donationHeading || '',
+        donationDescription: prevSettings.donationDescription || '',
+        sponsorImages: [],
+        sponsorImagePreviews: prevSettings.sponser || [],
+        sponsorHeading: prevSettings.sponsorHeading || '',
+        sponsorDescription: prevSettings.sponsorDescription || '',
+      });
     }
   }, [prevSettings]);
 
@@ -98,6 +113,58 @@ export default function Settings() {
     }
   };
 
+  // Handle donation images upload (multiple)
+  const handleDonationImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      const previews = [];
+      const readers = files.map((file) => {
+        const reader = new FileReader();
+        return new Promise((resolve) => {
+          reader.onloadend = () => {
+            previews.push(reader.result);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(() => {
+        setSettings((prev) => ({
+          ...prev,
+          donationImages: files,
+          donationImagePreviews: previews,
+        }));
+      });
+    }
+  };
+
+  // Handle sponsor images upload (multiple)
+  const handleSponsorImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      const previews = [];
+      const readers = files.map((file) => {
+        const reader = new FileReader();
+        return new Promise((resolve) => {
+          reader.onloadend = () => {
+            previews.push(reader.result);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(() => {
+        setSettings((prev) => ({
+          ...prev,
+          sponsorImages: files,
+          sponsorImagePreviews: previews,
+        }));
+      });
+    }
+  };
+
   const resetForm = () => {
     setSettings({
       websiteName: prevSettings?.websiteName || 'My Website',
@@ -109,13 +176,22 @@ export default function Settings() {
       coverDescription: prevSettings?.coverDescription || '',
       footerText: prevSettings?.footerText || '',
       contactEmail: prevSettings?.contactEmail || 'contact@example.com',
+      donationImages: [],
+      donationImagePreviews: prevSettings?.donation || [],
+      donationHeading: prevSettings?.donationHeading || '',
+      donationDescription: prevSettings?.donationDescription || '',
+      sponsorImages: [],
+      sponsorImagePreviews: prevSettings?.sponser || [],
+      sponsorHeading: prevSettings?.sponsorHeading || '',
+      sponsorDescription: prevSettings?.sponsorDescription || '',
     });
     setUploadProgress(0);
   };
 
   // Upload file to Bunny.net
   const uploadToBunny = async (file) => {
-    const endpoint = `https://${REGION_PREFIX}storage.bunnycdn.com/${STORAGE_ZONE}/${file.name}`;
+    const filename = `${Date.now()}-${file.name}`;
+    const endpoint = `https://${REGION_PREFIX}storage.bunnycdn.com/${STORAGE_ZONE}/${filename}`;
     
     try {
       const response = await axios.put(endpoint, file, {
@@ -130,7 +206,7 @@ export default function Settings() {
       });
 
       if (response.status === 201) {
-        return `https://shot-deck.b-cdn.net/${file.name}`;
+        return `https://shot-deck.b-cdn.net/${filename}`;
       }
       throw new Error('Upload failed');
     } catch (error) {
@@ -147,6 +223,8 @@ export default function Settings() {
       const uploadedUrls = {
         logo: settings.logo ? null : prevSettings?.logo || null,
         coverphoto: settings.coverphoto.length > 0 ? [] : prevSettings?.coverphoto || [],
+        donation: settings.donationImages.length > 0 ? [] : prevSettings?.donation || [],
+        sponser: settings.sponsorImages.length > 0 ? [] : prevSettings?.sponser || [],
       };
 
       // Upload logo if exists
@@ -164,7 +242,25 @@ export default function Settings() {
         uploadedUrls.coverphoto = await Promise.all(uploadPromises);
       }
 
-      // Prepare data for the backend, matching the schema field names
+      // Upload donation images if exist
+      if (settings.donationImages.length > 0) {
+        const uploadPromises = settings.donationImages.map(async (image) => {
+          return await uploadToBunny(image);
+        });
+
+        uploadedUrls.donation = await Promise.all(uploadPromises);
+      }
+
+      // Upload sponsor images if exist
+      if (settings.sponsorImages.length > 0) {
+        const uploadPromises = settings.sponsorImages.map(async (image) => {
+          return await uploadToBunny(image);
+        });
+
+        uploadedUrls.sponser = await Promise.all(uploadPromises);
+      }
+
+      // Prepare data for the backend
       const settingsData = {
         id: prevSettings?._id,
         websiteName: settings.websiteName || prevSettings?.websiteName || 'My Website',
@@ -174,6 +270,12 @@ export default function Settings() {
         coverDescription: settings.coverDescription || prevSettings?.coverDescription || '',
         footerText: settings.footerText || prevSettings?.footerText || '',
         contactEmail: settings.contactEmail || prevSettings?.contactEmail || 'contact@example.com',
+        donation: uploadedUrls.donation.length > 0 ? uploadedUrls.donation : prevSettings?.donation || [],
+        donationHeading: settings.donationHeading || prevSettings?.donationHeading || '',
+        donationDescription: settings.donationDescription || prevSettings?.donationDescription || '',
+        sponser: uploadedUrls.sponser.length > 0 ? uploadedUrls.sponser : prevSettings?.sponser || [],
+        sponsorHeading: settings.sponsorHeading || prevSettings?.sponsorHeading || '',
+        sponsorDescription: settings.sponsorDescription || prevSettings?.sponsorDescription || '',
       };
 
       // Send data to the backend
@@ -301,16 +403,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Upload Progress */}
-        {isUploading && (
-          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full"
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
-          </div>
-        )}
-
         {/* Cover Heading */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <div className="md:col-span-1">
@@ -348,6 +440,100 @@ export default function Settings() {
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
+          </div>
+        </div>
+
+        {/* Donation Section */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Donation Section</h2>
+          
+          {/* Donation Images Upload */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-4">
+            <div className="md:col-span-1">
+              <label htmlFor="donationImages" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Donation Images
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Upload multiple donation images</p>
+            </div>
+            <div className="md:col-span-2">
+              <div className="flex flex-wrap gap-2 mb-2">
+                {settings.donationImagePreviews.length > 0 ? (
+                  settings.donationImagePreviews.map((preview, index) => (
+                    <img
+                      key={index}
+                      src={preview}
+                      alt={`Donation image preview ${index + 1}`}
+                      className="h-16 w-16 object-cover rounded-md"
+                    />
+                  ))
+                ) : (
+                  <div className="h-16 w-32 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs">
+                    No donation images
+                  </div>
+                )}
+              </div>
+              <label className="cursor-pointer">
+                <span className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Upload Donation Images
+                </span>
+                <input
+                  type="file"
+                  id="donationImages"
+                  name="donationImages"
+                  accept="image/*"
+                  multiple
+                  onChange={handleDonationImagesUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Sponsor Section */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Sponsor Section</h2>
+          
+          {/* Sponsor Images Upload */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-4">
+            <div className="md:col-span-1">
+              <label htmlFor="sponsorImages" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Sponsor Images
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Upload multiple sponsor images</p>
+            </div>
+            <div className="md:col-span-2">
+              <div className="flex flex-wrap gap-2 mb-2">
+                {settings.sponsorImagePreviews.length > 0 ? (
+                  settings.sponsorImagePreviews.map((preview, index) => (
+                    <img
+                      key={index}
+                      src={preview}
+                      alt={`Sponsor image preview ${index + 1}`}
+                      className="h-16 w-16 object-cover rounded-md"
+                    />
+                  ))
+                ) : (
+                  <div className="h-16 w-32 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs">
+                    No sponsor images
+                  </div>
+                )}
+              </div>
+              <label className="cursor-pointer">
+                <span className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Upload Sponsor Images
+                </span>
+                <input
+                  type="file"
+                  id="sponsorImages"
+                  name="sponsorImages"
+                  accept="image/*"
+                  multiple
+                  onChange={handleSponsorImagesUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </div>
         </div>
 
@@ -391,6 +577,16 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Upload Progress */}
+        {isUploading && (
+          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
+
         {/* Save Button */}
         <div className="flex justify-end pt-4">
           <button
@@ -405,4 +601,3 @@ export default function Settings() {
     </div>
   );
 }
-

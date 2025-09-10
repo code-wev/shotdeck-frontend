@@ -154,12 +154,12 @@ export default function DashBoardLayout({ children }) {
         {/* Sidebar - conditionally render based on isAddShotPage */}
         {!isAddShotPage ? (
           <div
-            className={`sidebar bg-gray-800 text-white p-4 flex flex-col 
+            className={`sidebar max-h-dvh bg-gray-800 text-white p-4 flex flex-col 
               transition-all duration-300 ease-in-out
               ${collapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}
               fixed lg:relative z-40 w-64 h-full`}
           >
-            <div className="space-y-4 mt-16">
+            <div className="space-y-4  mt-16">
               {sidebarMenuItems.map((item, index) => (
                 <Link 
                   key={index}
