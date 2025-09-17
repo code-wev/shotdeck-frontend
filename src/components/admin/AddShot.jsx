@@ -23,6 +23,7 @@ import { IoClose } from "react-icons/io5";
 import { IoIosColorPalette } from "react-icons/io";
 import { AiOutlineMenu } from "react-icons/ai";
 import { LiaWindowCloseSolid } from "react-icons/lia";
+import { toast } from "react-toastify";
 
 export default function AddShot() {
   const axiosInstance = useSecureAxios();
@@ -282,7 +283,7 @@ const handleAddTimecode = async () => {
     console.error("Thumbnail generation error:", error);
     Swal.fire({
       title: "Error",
-      text: error.message || "Failed to generate thumbnail",
+      text:  isYouTubeLink ? 'Access to this video was denied by YouTube’s permissions policy.' : "Access to this video was denied by Vimeo’s permissions policy.",
       icon: "error",
       background: "#1a1a1a",
       color: "#ffffff"
@@ -817,6 +818,9 @@ const useYouTubeThumbnail = async () => {
   // };
 
 const handleVideoUpload = async (event) => {
+
+
+  
   const file = event.target.files[0];
   if (!file) return;
 
@@ -880,6 +884,22 @@ const handleFileUpload = async (event) => {
 };
 
 const onSubmit = async (data) => {
+
+
+
+  console.log(data.youtubeLink, "kuryme er youtube er heda")
+
+  if(data.youtubeLink.length < 1){
+
+
+
+    toast.error("Video is Required")
+      return;
+      
+
+    }
+
+
   if (isUploading) return;
   
   localStorage.setItem("AllTags", JSON.stringify(allTags));
@@ -956,7 +976,21 @@ const onSubmit = async (data) => {
     data.thumbnailTimecode = thumbnailTimecode;
     data.thumbnailSource = thumbnailSource;
 
+
+    if(!data.youtubeLink){
+
+      return alert("Video is Required")
+      
+
+    }
+
     // Submit the form data
+    console.log(data, "kiryemdfas")
+
+
+    if(!data.youtubeLink){
+      return toast.error("Video is Required")
+    }
     const resp = await axiosInstance.post(`${base_url}/shot/create`, data);
 
     Swal.fire({
@@ -964,6 +998,8 @@ const onSubmit = async (data) => {
       text: "Shot Saved Successfully wait for approval",
       icon: "success",
     });
+
+
 
     resetForm();
     window.location.reload();
@@ -1083,8 +1119,8 @@ useEffect(() => {
   );
 
   return (
-    <div className="min-h-screen max-w-[3000px]  pt-8 flex items-center justify-center bg-gray-900 overflow-hidden  mx-auto">
-      <div className="w-full my-auto mx-auto">
+    <div className="  min-h-screen   pt-8 flex  bg-gray-900 overflow-hidden  mx-auto">
+      <div className="w-full my-auto overflow-y-hidden mx-auto">
         <form onSubmit={(e) => {
     e.preventDefault(); // First prevent default
     handleSubmit(onSubmit)(); // Manually trigger submission
@@ -1094,7 +1130,7 @@ useEffect(() => {
       e.preventDefault(); // Block Enter key submission
     }
   }}
-  className="bg-gray-800 mt-4 my-auto rounded-lg shadow-xl p-4 md:p-6 lg:px-6 lg:p-3">
+  className="bg-gray-800 min-h-screen mt-8  my-auto rounded-lg shadow-xl p-4 md:p-6 lg:px-6 lg:p-3">
           {/* Basic Information Section */}
           <div className="xl:flex">
             <div className="flex-1 pr-8">
@@ -1270,7 +1306,8 @@ useEffect(() => {
                                 id={item.id}
                                 value={item.value}
                                 {...register("focalLength")}
-                                className="cursor-pointer"
+                                className="cursor-pointer "
+                                
                               />
                               <label htmlFor={item.id} className="cursor-pointer">{item.label}</label>
                             </div>
@@ -1595,6 +1632,7 @@ useEffect(() => {
                <div className="flex">
   <input
     {...register("youtubeLink")}
+    required
     className="flex-1 bg-gray-700 border border-gray-600 rounded-l-md py-1 px-3 focus:outline-none"
     placeholder="Upload a video or paste YouTube/Vimeo link"
     value={selectedVideo ? selectedVideo.name : watch("youtubeLink") || ""}

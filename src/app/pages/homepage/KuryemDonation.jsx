@@ -147,24 +147,29 @@ export default function KuryemDonation() {
           <div className='lg:flex justify-between'>
             <div className='mt-8'>
               <h4 className='birthstone text-lg'>One-time, monthly or yearly</h4>
-              <button
+              <a href='https://www.paypal.com/donate?hosted_button_id=2HTC7MJ9KHT8U'
+            target='_blank'
                 className="encode py-2 cursor-pointer px-12 text-xl flex gap-4 items-center mt-2 rounded text-white bg-[#30CAFE]"
                 style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.5)' }}
               >
                 <span>Donate With</span>
                 <BsPaypal />
-              </button>
+              </a>
             </div>
 
             <div className='mt-8'>
               <h4 className='birthstone text-lg'>One-time, monthly or yearly</h4>
-              <button
+            <a href="https://fr.tipeee.com/fx-references" target='_blank'>
+
+
+                <button
                 className="encode cursor-pointer py-2 px-8 text-xl flex gap-4 items-center mt-2 rounded text-white bg-[#30CAFE]"
                 style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.5)' }}
               >
                 <span>Donate With</span>
               <Image alt='logo' src={tipeeLogo} className='w-12'/>
               </button>
+            </a>
             </div>
           </div>
 

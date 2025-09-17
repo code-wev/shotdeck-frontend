@@ -10,6 +10,7 @@ import 'aos/dist/aos.css';
 import { useGetSettingQuery } from '@/redux/api/shot';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Link from 'next/link';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -111,12 +112,13 @@ export default function Cover() {
 <h4 className='text-white birthstone text-4xl text-center mt-3'    style={{ textShadow: '0 4px 6px rgba(0,0,0,1)' }} >References / Tutorial / Breakdown</h4>
 
 
+<Link href={'/browse'}>
 <button
-  className="encode py-2 px-12 mt-4 text-3xl rounded mx-auto flex justify-center text-white bg-[#30CAFE]"
+  className="encode py-2 px-12 cursor-pointer mt-4 text-3xl rounded mx-auto flex justify-center text-white bg-[#30CAFE]"
   style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.5)' }} // black with 50% opacity
 >
   Browse
-</button>
+</button></Link>
 
 <div className='text-center text-4xl mt-4'>
   
@@ -142,12 +144,14 @@ export default function Cover() {
       </div>
 
       <div className='flex justify-end '>
+       <Link href={data.link} className='cursor-pointer'>
+       
         <button
-          className="encode py-2 px-12 text-xl rounded text-white bg-[#30CAFE]"
+          className="encode cursor-pointer py-2 px-12 text-xl rounded text-white bg-[#30CAFE]"
           style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.5)' }} // 50% black shadow
         >
           {data.button}
-        </button>
+        </button></Link>
       </div>
     </div>
   ))}
@@ -177,7 +181,7 @@ const cardData = [
     title:'Help FX - References',
     subtitle:"This website is here for the FX community, free for everyone — but it does cost time and money to keep it running.If it has helped you, consider supporting it by donating through the link below.Your support helps keep it alive.",
     button:"donation",
-    link:"/sign-up",
+    link:"/donation",
     endText: "Thank you!"
   },
   {

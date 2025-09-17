@@ -1185,11 +1185,11 @@ const filterHandler = (e, groupName, value) => {
 
 
 
-        <div className="   mt-8 max-h-[calc(100vh-150px)] overflow-y-auto  no-scrollbar">
+        <div className="   mt-8 max-h-[calc(100vh-150px)] overflow-y-scroll  no-scrollbar">
 
 
             <h1 className='text-center text-xs'>Simulation Specification</h1>
-                    <p className=" px-1 capitalize p-1 text-white font-semibold  ">Simulation Type</p>
+                    <p className=" px-1 capitalize p-1 text-white text-center font-semibold  ">Simulation Type</p>
 
 
 
@@ -1278,7 +1278,7 @@ const filterHandler = (e, groupName, value) => {
                               };
                               filterHandler(fakeEvent, key, value);
                             }}
-                            className="accent-blue-500 cursor-pointer"
+                            className="accent-blue-500 mt-1 cursor-pointer"
                           />
                         }
                         {[
@@ -1324,7 +1324,7 @@ const filterHandler = (e, groupName, value) => {
     )
   ))}
   
-  <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
+  <div className={`transition-all duration-500 ease-in-out overflow-y-scroll ${
     !showSimulationType 
       ? 'max-h-0 opacity-0' 
       : 'max-h-[2400px] opacity-100'
@@ -1440,7 +1440,7 @@ const filterHandler = (e, groupName, value) => {
                       type="checkbox"
                       checked={checked}
                       onChange={(e) => filterHandler(e, filterGroup.name, item)}
-                      className="mt-1"
+                      className="mt-1 text-[500px]"
                     />
                     <p className="capitalize">
                       {item === 'extra-small' ? 'Extra Small ....... (<10cm)' : 
@@ -1560,7 +1560,8 @@ const filterHandler = (e, groupName, value) => {
                         type="checkbox"
                         checked
                         readOnly
-                        className="mt-1"
+                        className="mt-1 text-[500px]"
+                        
                       />
                       <p className="capitalize text-[14px] mt-1 text-white">
                         {selectedItem === 'extra-small' ? 'Extra Small (<10cm)' :
@@ -1608,11 +1609,11 @@ const filterHandler = (e, groupName, value) => {
                         type="checkbox"
                         checked={checked}
                         onChange={(e) => filterHandler(e, key, item)}
-                        className="mt-1 accent-[#526DA4]"
+                        className="mt-1 text- accent-[#526DA4]"
                       />
                       <label
                         htmlFor={inputId}
-                        className={`  capitalize text-white text-sm select-none cursor-pointer`}
+                        className={`   text-white text-sm mt-1 select-none cursor-pointer`}
                       >
                         {item === 'extra-small' ? 'Extra Small (<10cm)' :
                          item === 'small' ? 'Small (10cm-1m)' :
@@ -1813,8 +1814,8 @@ const filterHandler = (e, groupName, value) => {
       onClick={() => setModalIsOpen(false)}
     >
       <motion.div
-        className={`not-only:bg-[#1a1a1a] relative text-white rounded-2xl ${selectedShot.timecodes && selectedShot.timecodes.length > 0 ? 'xl:flex max-w-[1800px]' : 'max-w-[1600px]'} justify-between
-         shadow-2xl w-[90%] 2xl:w-[60%]  scrollbar-thin-gray lg:ml-20 mt-16 overflow-y-scroll no-scrollbar max-h-[90vh] p-8 relative`}
+        className={`not-only:bg-[#1a1a1a] relative text-white rounded-2xl ${selectedShot.timecodes && selectedShot.timecodes.length > 0 ? 'xl:flex max-[70%]' : 'xl:flex max-[70%] max-w-[1600px]'} justify-between
+         shadow-2xl w-[90%] 2xl:w-[80%]  scrollbar-thin-gray lg:ml-20 mt-16 overflow-y-scroll no-scrollbar max-h-[90vh] p-8 relative`}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
@@ -1824,7 +1825,7 @@ const filterHandler = (e, groupName, value) => {
 
 
 
-        <section className={` ${selectedShot.timecodes && selectedShot.timecodes.length > 0 ? 'xl:w-[70%]' : ''} `}>
+        <section className={` ${selectedShot.timecodes && selectedShot.timecodes.length > 0 ? 'xl:w-[70%]' : 'xl:w-[70%]'} `}>
 
   <button
           className="absolute top-2 bg-black px-2 rounded-full opacity-75 cursor-pointer right-2 text-white text-xl font-bold hover:text-[#526DA4]"
@@ -1907,7 +1908,7 @@ const filterHandler = (e, groupName, value) => {
 
               {
                 selectedShot?.tags?.map((item, idx)=> (
-                  <div className='bg-gray-800 py-2 px-4 rounded'>
+                  <div key={idx + 1} className='bg-gray-800 py-2 px-4 rounded'>
                     <h1>{item}</h1>
                   </div>
                 ))
@@ -1948,7 +1949,7 @@ const filterHandler = (e, groupName, value) => {
 ) : (
   <p>No valid video link found.</p>
 )}
-    {selectedShot.timecodes && selectedShot.timecodes.length > 0 && (
+    {selectedShot.timecodes && selectedShot.timecodes.length > 0 ? (
 
       
       <div className="mt-4  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
@@ -1975,7 +1976,13 @@ const filterHandler = (e, groupName, value) => {
           ))}
         </div>
       </div>
-    )}
+    )   : <div className='mt-4  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg'>
+      
+      
+      <h4>No Intrest point added</h4>
+      
+      
+      </div>}
         {/* Rest of your existing modal content */}
         <div className="text-left   pace-y-2">
    
@@ -2249,40 +2256,41 @@ const filterHandler = (e, groupName, value) => {
 
 
 </section>
-        <section className='xl:w-[26%]'>
-
-
-          
-   {/* Timecodes section */}
-     {selectedShot.timecodes && selectedShot.timecodes.length > 0 && (
-
+<section className='flex flex-col lg:flex-row'>
+  {/* Main content area */}
+  <div className="flex-1">
+    {/* Your main content goes here */}
+  </div>
+  
+  {/* Timecodes/Interest Points section - Fixed on the right */}
+  <div className="mt-4 lg:mt-0 lg:w-96 lg:ml-4">
+    <div className="hidden lg:block h-full overflow-y-scroll scrollbar-thin-gray lg:p-3 rounded-lg">
+      <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
       
-      <div className="mt-4 hidden lg:block max-h-full overflow-y-scroll scrollbar-thin-gray  lg:p-3 lg:ml-2 rounded-lg">
-              <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
-
-        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl ">
+      {selectedShot.timecodes && selectedShot.timecodes.length > 0 ? (
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl">
           {selectedShot.timecodes.map((tc, idx) => ( 
             <div 
               key={idx} 
-              className={`flex gap-3  items-center hover:bg-[#3a3a3a] p-2  pb-2  cursor-pointer transition-colors ${idx+1 === selectedShot.timecodes.length ? '' : 'border-b'}`}
-              onClick={() => handleTimecodeClick(tc.time, selectedShot.youtubeLink , tc.time)}
-
-
-
+              className={`flex gap-3 items-center hover:bg-[#3a3a3a] p-2 pb-2 cursor-pointer transition-colors ${idx+1 === selectedShot.timecodes.length ? '' : 'border-b border-gray-600'}`}
+              onClick={() => handleTimecodeClick(tc.time, selectedShot.youtubeLink, tc.time)}
             >
-              <img  src={tc.image} className='w-32 h-20'/>
-
-
-            <div className=''>
-                <p className=" font-semibold font-mono mr-3">{tc.time}</p>
-              <p className="text-gray-300">{tc.label}</p>
-            </div>
+              <img src={tc.image} alt={tc.label} className='w-32 h-20 object-cover rounded-lg'/>
+              <div className=''>
+                <p className="font-semibold font-mono mr-3">{tc.time}</p>
+                <p className="text-gray-300">{tc.label}</p>
+              </div>
             </div>
           ))}
         </div>
-      </div>
-    )} 
-        </section>
+      ) : (
+        <div className="bg-[#2a2a2a] lg:p-6  p-4 rounded-3xl">
+          <p className="text-gray-400 italic">No interest points available for this shot</p>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
       
       </motion.div>
 
@@ -2342,7 +2350,7 @@ const filterHandler = (e, groupName, value) => {
         <div className="mb-4">
           <h4 className="font-medium mb-2">Add to existing collections:</h4>
           {collectonNames.length > 0 ? (
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            <div className="space-y-2 max-h-60 no-scrollbar overflow-y-auto">
               {collectonNames.map(collection => {
                 // Find the collection item if it exists
                 const collectionItem = myShotData?.data?.find(
@@ -2365,8 +2373,9 @@ const filterHandler = (e, groupName, value) => {
                             setCurrentClc('');
                           }
                         }}
+                     
                       />
-                      <span>{collection.name}</span>
+                      <span className=''>{collection.name}</span>
                     </label>
                     
                     {isShotInCollection && (
@@ -2451,7 +2460,7 @@ const filterHandler = (e, groupName, value) => {
         <div className="mb-4">
           <h4 className="font-medium mb-2">Add to existing collections:</h4>
           {collectonNames.length > 0 ? (
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            <div className="space-y-2 max-h-60 no-scrollbar overflow-y-auto">
               {collectonNames.map(collection => {
                 const collectionItem = myShotData?.data?.find(
                   item => item.shotId === currentShotForCollections._id && 

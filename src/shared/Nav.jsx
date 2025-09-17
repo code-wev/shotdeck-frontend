@@ -42,11 +42,11 @@ export default function Nav() {
   }
 
   const navItems = [
-    { name: 'ADD SHOTS', link: '/add-shots' },
-    { name: 'BROWSE SHOTS', link: '/browse' },
-    { name: 'RANDOM SHOTS', link: '/random' },
-    { name: 'MY COLLECTION', link: '/my-collection' },
-    { name: 'MY SHOT', link: '/my-shot' },
+    { name: 'ADD', link: '/add-shots' },
+    { name: 'BROWSE', link: '/browse' },
+    { name: 'RANDOM', link: '/random' },
+    { name: 'MY COLLECTIONS', link: '/my-collection' },
+    { name: 'MY VIDEOS', link: '/my-shot' },
     { name: 'DONATION', link: '/donation' },
 
   ];
