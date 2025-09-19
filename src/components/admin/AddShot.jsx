@@ -1119,7 +1119,7 @@ useEffect(() => {
   );
 
   return (
-    <div className="  min-h-screen   pt-8 flex  bg-gray-900 overflow-hidden  mx-auto">
+    <div className="  pt-8 flex bg-gray-900 overflow-hidden mx-auto">
       <div className="w-full my-auto overflow-y-hidden mx-auto">
         <form onSubmit={(e) => {
     e.preventDefault(); // First prevent default
@@ -1130,7 +1130,7 @@ useEffect(() => {
       e.preventDefault(); // Block Enter key submission
     }
   }}
-  className="bg-gray-800 min-h-screen mt-8  my-auto rounded-lg shadow-xl p-4 md:p-6 lg:px-6 lg:p-3">
+  className="bg-gray-800 min-h-screen mt-8   my-auto rounded-lg shadow-xl p-4 md:p-6 lg:px-6 lg:p-3">
           {/* Basic Information Section */}
           <div className="xl:flex">
             <div className="flex-1 pr-8">
@@ -1181,8 +1181,8 @@ useEffect(() => {
     </div>
 
     <div className="flex-1">
-      <label htmlFor='matureContent' className="underline hidden lg:block underline-offset-4 text-red-600 mt-2">
-        <span className="mr-[10px]">
+      <label htmlFor='matureContent' className="underline hidden lg:block underline-offset-4 text-red-600 ">
+        <span className="mr-[10px] mt-1">
           <input type="checkbox" name="" id="matureContent" />
         </span>
         <span className="font-semibold text-xs">Mature Content</span>{" "}
@@ -1213,7 +1213,7 @@ useEffect(() => {
     <span className="mr-[10px]">
       <input type="checkbox" name="" id="" />
     </span>
-    <span className="font-semibold text-xs">Mature Content</span>{" "}
+    <span className="font-semibold text-xs">Mature Contentss</span>{" "}
     <span className="text-[10px] wra font-semibold">
       (Please Note: Any Sexually Explicit or extremely
       violent content will not be accepted Keep submissions

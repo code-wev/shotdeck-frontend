@@ -1018,7 +1018,7 @@ const filterHandler = (e, groupName, value) => {
   return (
     <div className=''>
 
-               <div className="flex flex-wrap gap-2 pt-28 md:ml-96 ml-4 mt-4">
+               <div className="flex flex-wrap gap-2 pt-28 md:ml-96 ml-4 ">
   {searchTag.map((tag, idx) => (
     <div
       key={idx}
@@ -1149,7 +1149,7 @@ const filterHandler = (e, groupName, value) => {
 
         {/* Filter Sidebar */}
         <section
-          className={`fixed top-[73px] min-h-screen mt-2 w-64 transform transition-transform duration-300 ease-in-out z-40 ${
+          className={`fixed top-[73px] min-h-screen  mt-2 w-64 transform transition-transform duration-300 ease-in-out z-40 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0 md:w-64`}
         >
@@ -1763,6 +1763,10 @@ const filterHandler = (e, groupName, value) => {
     
   </AnimatePresence>
 </section>
+
+
+
+
       </div>
 
       {/* Loading Indicator */}
@@ -1814,7 +1818,7 @@ const filterHandler = (e, groupName, value) => {
       onClick={() => setModalIsOpen(false)}
     >
       <motion.div
-        className={`not-only:bg-[#1a1a1a] relative text-white rounded-2xl ${selectedShot.timecodes && selectedShot.timecodes.length > 0 ? 'xl:flex max-[70%]' : 'xl:flex max-[70%] max-w-[1600px]'} justify-between
+        className={`not-only:bg-[#1a1a1a] relative text-white rounded-2xl ${selectedShot.timecodes && selectedShot.timecodes.length > 0 ? 'xl:flex max-[70%]' : 'xl:flex max-[70%] '} justify-between
          shadow-2xl w-[90%] 2xl:w-[80%]  scrollbar-thin-gray lg:ml-20 mt-16 overflow-y-scroll no-scrollbar max-h-[90vh] p-8 relative`}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -1925,6 +1929,7 @@ const filterHandler = (e, groupName, value) => {
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
+        className='min-h-[60vh]'
       ></iframe>
     ) : selectedShot.youtubeLink.includes('vimeo.com') ? (
       <div className="relative pb-[56.25%] h-0 overflow-hidden">
@@ -1952,7 +1957,7 @@ const filterHandler = (e, groupName, value) => {
     {selectedShot.timecodes && selectedShot.timecodes.length > 0 ? (
 
       
-      <div className="mt-4  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
+      <div className="mt-4 text-left  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
               <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
 
         <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl ">

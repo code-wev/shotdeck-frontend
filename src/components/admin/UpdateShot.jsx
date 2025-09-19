@@ -1182,6 +1182,79 @@ export default function UpdateShot() {
     </div>
   </div>
   }
+
+
+
+     <div className="">
+                    <label className="block text-xs font-medium mb-2 text-white">Interest Point</label>
+                    
+                    <div className="bg-gray-700 p-4   rounded-xl">
+                      <div className="flex flex-col sm:flex-row overflow-hidden sm:items-center gap-2 mb-3">
+                        <input
+                          type="text"
+                          className="flex-1 bg-gray-800 rounded px-3 py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
+                          placeholder="Short Description"
+                          value={currentDesc}
+                          onChange={(e) => setCurrentDesc(e.target.value)}
+                        />
+                        <input
+                          type="text"
+                          className="sm:w-32 bg-gray-800 rounded px-3 py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
+                          placeholder="Timecode (mm:ss)"
+                          value={currentTime}
+                          onChange={(e) => setCurrentTime(e.target.value)}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddTimecode}
+                        className="bg-blue-500 hover:bg-blue-600 ml-auto flex justify-end text-right text-white text-xs font-medium px-4 py-1 rounded"
+                        disabled={!currentDesc || !currentTime || isUploading}
+                      >
+                        {generateLoading ? 'Generating...' : 'ADD'}
+                      </button>
+                    </div>
+  
+                    {/* List of Timecodes */}
+                    <ul className="mt-4 divide-y  space-y-4 scrollbar-thin-gray overflow-y-scroll divide-gray-600 rounded text-xs text-white overflow-hidden">
+                      {timecodes.map((tc, idx) => (
+                        <li
+                          key={idx}
+                          className="relative px-3 py-4 text-gray-400 cursor-move group"
+                          draggable
+                          onDragStart={(e) => e.dataTransfer.setData('text/plain', idx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const draggedIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                            handleReorder(draggedIdx, idx);
+                          }}
+                        >
+                          {tc.image && (
+                            <img 
+                              src={tc.image} 
+                              alt="Timecode thumbnail" 
+                              className="absolute left-24  top-[40%] -translate-y-1/2 w-8 h-8 object-cover rounded"
+                            />
+                          )}
+                      
+                          <AiOutlineMenu className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl" />
+                          
+                          <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            {tc.label}
+                          </span>
+                          <span className="absolute right-10 top-1/2 -translate-y-1/2">{tc.time}</span>
+                        
+                          <button
+                            onClick={() => removeTimecode(idx)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <IoClose className="text-red-500 hover:text-red-400" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
               </div>
             </div>
           </div>
