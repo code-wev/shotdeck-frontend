@@ -154,7 +154,7 @@ function Random() {
     };
 
     const getVideoSource = () => {
-      if (shot.youtubeLink.includes('youtu')) {
+      if (shot?.youtubeLink?.includes('youtu')) {
         return (
           <div className="video-container w-full h-full relative">
             <iframe
@@ -195,7 +195,7 @@ function Random() {
             className="w-full h-full object-contain bg-black"
             poster={shot.imageUrl || getVideoThumbnail(shot.youtubeLink, shot.thumbnailTimecode?.[0] || '0:00')}
           >
-            {!isHLS && <source src={videoUrl} type="video/mp4" />}
+            {!isHLS && <source src={videoUrl || "https://youtube.com/shorts/yNWwQnTbU8U?si=smpcpubt_3h9P26P"} type="video/mp4" />}
             Your browser does not support the video tag.
           </video>
         );
