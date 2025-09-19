@@ -1826,7 +1826,7 @@ const filterHandler = (e, groupName, value) => {
 
 
 {
-  userRole === "admin" && <section className='flex items-center '>
+  !userRole === "admin" && <section className='flex items-center '>
   
  <FaTrash onClick={()=> handleDelete(selectedShot?._id, selectedShot?.title)} className='text-red-500 absolute top-12 cursor-pointer left-2'/>
 

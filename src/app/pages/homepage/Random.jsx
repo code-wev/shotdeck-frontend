@@ -154,7 +154,7 @@ function Random() {
     };
 
     const getVideoSource = () => {
-      if (shot?.youtubeLink?.includes('youtu')) {
+      if (shot.youtubeLink.includes('youtu')) {
         return (
           <div className="video-container w-full h-full relative">
             <iframe
@@ -195,7 +195,7 @@ function Random() {
             className="w-full h-full object-contain bg-black"
             poster={shot.imageUrl || getVideoThumbnail(shot.youtubeLink, shot.thumbnailTimecode?.[0] || '0:00')}
           >
-            {!isHLS && <source src={videoUrl || "https://youtube.com/shorts/yNWwQnTbU8U?si=smpcpubt_3h9P26P"} type="video/mp4" />}
+            {!isHLS && <source src={videoUrl || 'https://youtu.be/CfLzHC5cjF4?si=t4o2SNPG9pNlADnW'} type="video/mp4" />}
             Your browser does not support the video tag.
           </video>
         );
@@ -228,29 +228,41 @@ function Random() {
     }, 0);
   };
 
-  function getVideoThumbnail(url, timecode = '0:00') {
-    try {
-      const seconds = convertTimecodeToSeconds(timecode);
-      const videoUrl = new URL(url);
+function getVideoThumbnail(url, timecode = '0:00') {
+  try {
+    const seconds = convertTimecodeToSeconds(timecode);
 
-      if (isCloudinaryUrl(videoUrl)) {
-        return getCloudinaryThumbnailWithTime(url, seconds);
-      }
-      
-      if (isYouTubeUrl(videoUrl)) {
-        return getYouTubeThumbnail(url);
-      }
-      
-      if (isVimeoUrl(videoUrl)) {
-        return getVimeoThumbnail(url);
-      }
-      
-      return null;
-    } catch (err) {
-      console.error('Error generating thumbnail:', err);
-      return null;
+    // fallback URL
+    const fallbackUrl = 'https://youtu.be/CfLzHC5cjF4?si=t4o2SNPG9pNlADnW';
+
+    let videoUrl;
+
+    try {
+      videoUrl = new URL(url || fallbackUrl);
+    } catch {
+      console.warn('Invalid URL provided, using fallback');
+      videoUrl = new URL(fallbackUrl);
     }
+
+    // if (isCloudinaryUrl(videoUrl)) {
+    //   return getCloudinaryThumbnailWithTime(url, seconds);
+    // }
+
+    if (isYouTubeUrl(videoUrl)) {
+      return getYouTubeThumbnail(url);
+    }
+
+    if (isVimeoUrl(videoUrl)) {
+      return getVimeoThumbnail(url);
+    }
+
+    return null;
+  } catch (err) {
+    console.error('Error generating thumbnail:', err);
+    return null;
   }
+}
+
 
   const getYouTubeThumbnail = (url) => {
     try {
