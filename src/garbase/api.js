@@ -1,60 +1,69 @@
-// app/api/frames/route.js
+ <section>
 
-import { exec } from 'child_process';
-import path from 'path';
-import fs from 'fs';
-import tmp from 'tmp';
-import { NextResponse } from 'next/server';
+    <div>
+      adsf
+    </div>
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const url = searchParams.get('url');
-  const timestamp = searchParams.get('timestamp');
-  
+         {shot.timecodes && shot.timecodes.length > 0 ? (
 
-  if (!url || !timestamp) {
-    return NextResponse.json({ error: 'url and timestamp are required' }, { status: 400 });
-  }
+      
+      <div className="mt-4 text-left  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
+              <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
 
-  const cleanUrl = url.split('?')[0]; // Remove ?si=...
-  const tempDir = tmp.dirSync({ unsafeCleanup: true });
-  const outputImage = path.join(tempDir.name, 'thumb.jpg');
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl ">
+          {shot.timecodes.map((tc, idx) => ( 
+            <div 
+              key={idx} 
+              className={`flex gap-3  items-center hover:bg-[#3a3a3a] p-2  pb-2  cursor-pointer transition-colors ${idx+1 === shot.timecodes.length ? '' : 'border-b'}`}
+              onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink , tc.time)}
 
-  // Use yt-dlp instead of youtube-dl here
-  const ytdlCmd = `yt-dlp -f worst -g "${cleanUrl}"`;
 
-  return new Promise((resolve) => {
-    exec(ytdlCmd, (err, stdout) => {
-      if (err) {
-        return resolve(
-          NextResponse.json({ error: 'yt-dlp failed', details: err.message }, { status: 500 })
-        );
-      }
 
-      const videoStreamURL = stdout.trim();
-      const ffmpegCmd = `ffmpeg -ss ${timestamp} -i "${videoStreamURL}" -frames:v 1 -q:v 2 "${outputImage}" -y`;
+            >
+               <img  src={tc.image} className='w-32 h-20'/>
 
-      exec(ffmpegCmd, (err) => {
-        if (err || !fs.existsSync(outputImage)) {
-          return resolve(
-            NextResponse.json({ error: 'ffmpeg failed', details: err?.message }, { status: 500 })
-          );
-        }
 
-        const imageBuffer = fs.readFileSync(outputImage);
-        tempDir.removeCallback();
+            <div className=''>
+                <p className=" font-semibold font-mono mr-3">{tc.time}</p>
+              <p className="text-gray-300">{tc.label}</p>
+            </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )   : <div className='mt-4  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg'>
+      
+      
+      <h4>No Intrest point added</h4>
+      
+      
+      </div>}
 
-        return resolve(
-          new NextResponse(imageBuffer, {
-            status: 200,
-            headers: {
-              'Content-Type': 'image/jpeg',
-            },
-          })
-        );
-      });
-    });
-  });
-}
-
-// // porikoponar malik allah.sokol poriko;ponar kol khati tini ei laren.tar upor amar somporno vorosa.ocirei tinni amake proanti diba.amar atta ke shanto korba.khoramoy ei hridoy se andolito korba.uni amar jnno porikolpona koe rekehsen.just exucution korar pala.khora attay tini jom bristi diye boriye diben.bondo hin jibone tini procor sobakhanki diben, procor bondhu diben.jader kase ami sidha gahda tader nikot tini amay ak binno rope present korben.sobai dekhe tak lege cokh kopal e uthe jabe.hoito aj na hoi kal tini khub sigroi amake prosanti dan korben.je din e asi, osthir hoye asi sei din ekdin foriye jabe.khub sigroi foriye jabe.
+        <div className="mt-4 lg:mt-0 lg:w-96 lg:ml-4">
+    <div className="hidden lg:block h-full overflow-y-scroll scrollbar-thin-gray lg:p-3 rounded-lg">
+      <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
+      
+      {shot.timecodes && shot.timecodes.length > 0 ? (
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl">
+          {shot.timecodes.map((tc, idx) => ( 
+            <div 
+              key={idx} 
+              className={`flex gap-3 items-center hover:bg-[#3a3a3a] p-2 pb-2 cursor-pointer transition-colors ${idx+1 === shot.timecodes.length ? '' : 'border-b border-gray-600'}`}
+              onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink, tc.time)}
+            >
+              <img src={tc.image} alt={tc.label} className='w-32 h-20 object-cover rounded-lg'/>
+              <div className=''>
+                <p className="font-semibold font-mono mr-3">{tc.time}</p>
+                <p className="text-gray-300">{tc.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-[#2a2a2a] lg:p-6  p-4 rounded-3xl">
+          <p className="text-gray-400 italic">No interest points available for this shot</p>
+        </div>
+      )}
+    </div>
+  </div>
+     </section>

@@ -1952,7 +1952,17 @@ const filterHandler = (e, groupName, value) => {
  
   </div>
 ) : (
-  <p>No valid video link found.</p>
+  <section className='flex items-center '>
+  
+ <FaTrash onClick={()=> handleDelete(selectedShot?._id, selectedShot?.title)} className='text-red-500 absolute top-12 cursor-pointer left-2'/>
+
+<Link href={`/admin/edit/${selectedShot?._id}`}>
+ <FaEdit  className='text-blue-500 absolute top-20 cursor-pointer left-2'/>
+ 
+ </Link>
+             <h2 className="lg:text-2xl mb-1  font-semibold">{selectedShot.title || 'Shot Title'}</h2>
+</section>
+
 )}
     {selectedShot.timecodes && selectedShot.timecodes.length > 0 ? (
 

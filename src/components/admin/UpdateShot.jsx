@@ -24,12 +24,16 @@ import { IoClose } from "react-icons/io5";
 import { IoIosColorPalette } from "react-icons/io";
 import { AiOutlineMenu } from "react-icons/ai";
 import { LiaWindowCloseSolid } from "react-icons/lia";
+import { toast, ToastContainer } from 'react-toastify';
+
 
 export default function UpdateShot() {
   const { id } = useParams();
-  const { data: shotData, refetch } = useGetSingleShotQuery(id);
+  const { data: shotData, refetch, isLoading } = useGetSingleShotQuery(id);
   const simulationScrollRef = useRef(null);
   const axiosInstance = useSecureAxios();
+
+  console.log(shotData, "tomi amar only heda")
   
   const {
     register,
@@ -90,6 +94,8 @@ export default function UpdateShot() {
   const [error, setShowError] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+const [timecodesTest, setTimecodesTest] = useState([{}])
+
 
   // Bunny.net configuration
   const STORAGE_ZONE = "shot-deck";
@@ -97,12 +103,39 @@ export default function UpdateShot() {
   const REGION_PREFIX = "";
   const PULL_BASE = "storage.bunnycdn.com" || "";
 
+
+  const handleDeleteTimeCode = async(label, time, image)=>{
+    try {
+      
+      console.log(label, time,id, "fuck")
+      const deleteTimecode = await axios.put(`${base_url}/shot/deletetimecode`, {label, time,image, id});
+      if(deleteTimecode.status === 200){
+        Swal.fire({
+        title: 'Success',
+        text: 'Time code delete successfully',
+        icon: 'success',
+        background: '#171717',
+        color: '#ffffff'
+      });
+      }
+      refetch()
+ 
+      console.log(deleteTimecode, "re re re")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const handleEditSubmit = async(formData) => {
     try {
       const updatedData = await axios.put(`${base_url}/shot/update-shot/${id}`, formData);
       console.log(updatedData, 'This is updated kroar por data')
+
+          setTimecodes([])
       
       refetch();
+  
+  
       
       Swal.fire({
         title: 'Success',
@@ -111,6 +144,8 @@ export default function UpdateShot() {
         background: '#171717',
         color: '#ffffff'
       });
+
+        //  window.location.reload()
     } catch (error) {
       Swal.fire({
         title: 'Error',
@@ -312,10 +347,141 @@ export default function UpdateShot() {
     return match ? match[5] : null;
   };
 
-  const handleAddTimecode = async () => {
-    // This function is now disabled as per requirements
+
+
+
+const handleAddTimecode = async () => {
+  // Validate time format
+  const timeRegex = /^(?:(\d{1,2}):)?([0-5]?\d):([0-5]\d)$/;
+  if (!timeRegex.test(currentTime)) {
+    Swal.fire({
+      title: "Error",
+      text: "Invalid time format. Use MM:SS or HH:MM:SS",
+      icon: "error",
+    });
     return;
-  };
+  }
+
+  if (!currentDesc || !currentTime) {
+    Swal.fire({
+      title: "Error",
+      text: "Description and Time are required",
+      icon: "error",
+    });
+    return;
+  }
+
+  try {
+    setIsUploading(true);
+    setGenerateLoading(true);
+    
+    let imageUrl = null;
+    const videoUrl = watch("youtubeLink");
+
+    // Handle YouTube/Vimeo videos
+    if ((isYouTubeLink || isVimeoLink) && videoUrl) {
+      const apiEndpoint = isYouTubeLink ? `${base_url}/shot/dlp` : `${base_url}/shot/dlpv`;
+      const apiUrl = `${apiEndpoint}?url=${encodeURIComponent(videoUrl)}&timestamp=${currentTime}`;
+      
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error(`${isYouTubeLink ? 'YouTube' : 'Vimeo'} API request failed`);
+      
+      const blob = await response.blob();
+      if (!blob) throw new Error("No thumbnail image received");
+      
+      const fileName = `${Date.now()}_${currentTime.replace(/:/g, '-')}.jpg`;
+      imageUrl = await uploadBlobToBunny(blob, fileName);
+    } 
+    // Handle local video uploads
+    else if (videoPreview) {
+      const video = document.createElement('video');
+      video.src = videoPreview;
+      video.crossOrigin = 'anonymous';
+      video.preload = 'metadata';
+
+      // Load video metadata
+      await new Promise((resolve, reject) => {
+        video.onloadedmetadata = () => resolve();
+        video.onerror = () => reject(new Error("Failed to load video"));
+        video.load();
+      });
+
+      // Convert timecode to seconds
+      const timeParts = currentTime.split(':').map(Number);
+      const timeInSeconds = timeParts.length === 2 
+        ? timeParts[0] * 60 + timeParts[1] 
+        : timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+
+      // Validate against duration
+      if (timeInSeconds > video.duration) {
+        throw new Error(`Timecode exceeds video duration `);
+      }
+
+      // Seek to timecode
+      video.currentTime = timeInSeconds;
+      await new Promise((resolve, reject) => {
+        const seekTimeout = setTimeout(() => 
+          reject(new Error("Seeking timed out")), 5000);
+
+        video.onseeked = () => {
+          clearTimeout(seekTimeout);
+          resolve();
+        };
+        video.onerror = () => {
+          clearTimeout(seekTimeout);
+          reject(new Error("Failed to seek to timecode"));
+        };
+      });
+
+      // Capture frame
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert to image
+      imageUrl = await new Promise((resolve, reject) => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            reject(new Error("Failed to create thumbnail image"));
+            return;
+          }
+          try {
+            const fileName = `${Date.now()}_${currentTime.replace(/:/g, '-')}.jpg`;
+            const url = await uploadBlobToBunny(blob, fileName);
+            resolve(url);
+          } catch (uploadError) {
+            reject(uploadError);
+          }
+        }, 'image/jpeg', 0.9); // 90% quality
+      });
+    } else {
+      throw new Error("No valid video source available");
+    }
+
+    // Add successful timecode
+    setTimecodes((prev) => [
+      ...prev,
+      { label: currentDesc, time: currentTime, image: imageUrl },
+    ]);
+    setCurrentDesc("");
+    setCurrentTime("");
+
+  } catch (error) {
+    console.error("Thumbnail generation error:", error);
+    Swal.fire({
+      title: "Error",
+      text:  error?.message,
+      icon: "error",
+      background: "#1a1a1a",
+      color: "#ffffff"
+    });
+  } finally {
+    setIsUploading(false);
+    setGenerateLoading(false);
+  }
+};
 
   const handleScroll = useCallback(() => {
     if (scrollContainerRef.current) {
@@ -327,6 +493,9 @@ export default function UpdateShot() {
       setIsScrolledToEnd(prev => prev !== isAtEnd ? isAtEnd : prev);
     }
   }, []);
+
+
+
 
   const useYouTubeThumbnail = async () => {
     const videoUrl = watch("youtubeLink");
@@ -375,6 +544,8 @@ export default function UpdateShot() {
     }
   };
 
+
+
   const getYouTubeId = (url) => {
     try {
       if (url.includes("/shorts/")) {
@@ -408,6 +579,8 @@ export default function UpdateShot() {
     }
   };
 
+
+  
   useEffect(() => {
     // When video source changes, reset to default thumbnail if YouTube/Vimeo
     if (isYouTubeLink || isVimeoLink) {
@@ -476,16 +649,53 @@ export default function UpdateShot() {
   const handleTouchEnd = () => {
     setIsDragging(false);
   };
+const removeTimecode = async (index) => {
+  try {
+    const timecodeToRemove = timecodes[index];
+    
+    if (timecodeToRemove?.image) {
+      // Extract filename from URL and delete from Bunny.net
+      const urlParts = timecodeToRemove.image.split('/');
+      const fileName = decodeURIComponent(urlParts[urlParts.length - 1]);
+      
+      const endpoint = `https://storage.bunnycdn.com/${STORAGE_ZONE}/${fileName}`;
+      
+      await axios.delete(endpoint, {
+        headers: { 
+          AccessKey: ACCESS_KEY
+        }
+      });
+    }
 
-  const removeTimecode = async (index) => {
-    // This function is now disabled as per requirements
-    return;
-  };
+    // Remove from local state
+    const newTimecodes = timecodes.filter((_, i) => i !== index);
+    setTimecodes(newTimecodes);
+    
+    // Update form value
+    setValue('timecodes', newTimecodes);
+
+  } catch (error) {
+    console.error("Error deleting timecode:", error);
+    Swal.fire({
+      title: "Error",
+      text: "Failed to delete timecode",
+      icon: "error",
+      background: "#1a1a1a",
+      color: "#ffffff"
+    });
+  }
+};
 
   const handleReorder = (fromIndex, toIndex) => {
-    // This function is now disabled as per requirements
-    return;
-  };
+  if (fromIndex === toIndex) return;
+  
+  const newTimecodes = [...timecodes];
+  const [movedItem] = newTimecodes.splice(fromIndex, 1);
+  newTimecodes.splice(toIndex, 0, movedItem);
+  
+  setTimecodes(newTimecodes);
+  setValue('timecodes', newTimecodes);
+};
 
   useEffect(() => {
     const url = watch("youtubeLink");
@@ -567,75 +777,134 @@ export default function UpdateShot() {
   };
 
   // Pre-fill form when data is loaded
-  useEffect(() => {
-    if (shotData?.data) {
-      const data = shotData.data;
-      console.log('Filling form with data:', data);
+// Pre-fill form when data is loaded - এইটাই শুধু রাখুন
+useEffect(() => {
+  if (shotData?.data) {
+    const data = shotData.data;
+    console.log('Filling form with data:', data.timecodes);
+    
+    if(!isLoading){
+
+      console.log(shotData?.data?.timecodes)
+    }
+    console.log(timecodesTest, "arebal")
+    
+    // Set basic fields
+    setValue('title', data.title || '');
+    setValue('youtubeLink', data.youtubeLink || '');
+    setAllTags(data.tags || []);
+    
+    // Set technical details
+    setValue('focalLength', data.focalLength || []);
+    setValue('lightingConditions', data.lightingConditions || []);
+    setValue('videoType', data.videoType || []);
+    setValue('referenceType', data.referenceType || []);
+    setValue('videoSpeed', data.videoSpeed || []);
+    setValue('videoQuality', data.videoQuality || []);
+    setValue('simulationSize', data.simulationSize || []);
+    setValue('simulationStyle', data.simulationStyle || []);
+    setValue('motionStyle', data.motionStyle || []);
+    setValue('emitterSpeed', data.emitterSpeed || []);
+    setValue('simulationSoftware', data.simulationSoftware || []);
+    
+    // Set simulator types
+    if (data.simulatorTypes) {
+      Object.keys(data.simulatorTypes).forEach(key => {
+        setValue(`simulatorTypes.${key}`, data.simulatorTypes[key] || []);
+      });
+    }
+    
+    // Set media - এখানে শুধু একবার setTimecodes করুন
+    console.log('Timecodes from API:', data.timecodes);
+    
+    // Timecodes properly set করুন
+    if (Array.isArray(data.timecodes) && data.timecodes.length > 0) {
+      const validTimecodes = data.timecodes.filter(tc => 
+        tc && 
+        typeof tc === 'object' && 
+        tc.label && 
+        tc.time && 
+        tc.image
+      );
+      console.log('Setting valid timecodes:', validTimecodes);
+
+    } else {
+      setTimecodes([]);
+    }
+    
+    // Set thumbnail
+    setVideoThumbnail(data.imageUrl);
+    setThumbnailTimecode(data.thumbnailTimecode || "");
+    
+    // Determine video source
+    if (data.youtubeLink) {
+      const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+      const vimeoRegex = /^(https?:\/\/)?(www\.)?vimeo\.com\/.+/;
       
-      // Set basic fields
-      setValue('title', data.title);
-      setValue('youtubeLink', data.youtubeLink);
-      setAllTags(data.tags || []);
-      
-      // Set technical details
-      setValue('focalLength', data.focalLength || []);
-      setValue('lightingConditions', data.lightingConditions || []);
-      setValue('videoType', data.videoType || []);
-      setValue('referenceType', data.referenceType || []);
-      setValue('videoSpeed', data.videoSpeed || []);
-      setValue('videoQuality', data.videoQuality || []);
-      setValue('simulationSize', data.simulationSize || []);
-      setValue('simulationStyle', data.simulationStyle || []);
-      setValue('motionStyle', data.motionStyle || []);
-      setValue('emitterSpeed', data.emitterSpeed || []);
-      setValue('simulationSoftware', data.simulationSoftware || []);
-      
-      // Set simulator types
-      if (data.simulatorTypes) {
-        Object.keys(data.simulatorTypes).forEach(key => {
-          setValue(`simulatorTypes.${key}`, data.simulatorTypes[key]);
-        });
-      }
-      
-      // Set media
-      setVideoThumbnail(data.imageUrl);
-      setTimecodes(data.timecodes || []);
-      setThumbnailTimecode(data.thumbnailTimecode || "");
-      
-      // Determine video source
-      if (data.youtubeLink) {
-        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
-        const vimeoRegex = /^(https?:\/\/)?(www\.)?vimeo\.com\/.+/;
-        
-        if (youtubeRegex.test(data.youtubeLink)) {
-          setIsYouTubeLink(true);
-          setIsVimeoLink(false);
-          setVideoPreview(null);
-        } else if (vimeoRegex.test(data.youtubeLink)) {
-          setIsVimeoLink(true);
-          setIsYouTubeLink(false);
-          setVideoPreview(null);
-        } else {
-          setIsYouTubeLink(false);
-          setIsVimeoLink(false);
-          setVideoPreview(data.youtubeLink);
-        }
+      if (youtubeRegex.test(data.youtubeLink)) {
+        setIsYouTubeLink(true);
+        setIsVimeoLink(false);
+        setVideoPreview(null);
+      } else if (vimeoRegex.test(data.youtubeLink)) {
+        setIsVimeoLink(true);
+        setIsYouTubeLink(false);
+        setVideoPreview(null);
+      } else {
+        setIsYouTubeLink(false);
+        setIsVimeoLink(false);
+        setVideoPreview(data.youtubeLink);
       }
     }
-  }, [shotData, setValue]);
+  }
+}, [shotData, setValue]);
 
-  const onSubmit = async (data) => {
-    console.log('Form data to be updated:', data);
+const onSubmit = async (data) => {
+  try {
     const formData = {
       ...data,
-      tags: allTags // Explicitly include the current tags
+      tags: allTags,
+ timecodes: [...(shotData?.data?.timecodes || []), ...(timecodes || [])],
+
+ // Explicitly include current timecodes
+      // imageUrl: videoThumbnail, // Include the thumbnail
+      // Ensure all array fields are properly formatted
+      focalLength: data.focalLength || [],
+      lightingConditions: data.lightingConditions || [],
+      videoType: data.videoType || [],
+      referenceType: data.referenceType || [],
+      videoSpeed: data.videoSpeed || [],
+      videoQuality: data.videoQuality || [],
+      simulationSize: data.simulationSize || [],
+      simulationStyle: data.simulationStyle || [],
+      motionStyle: data.motionStyle || [],
+      emitterSpeed: data.emitterSpeed || [],
+      simulationSoftware: data.simulationSoftware || [],
+      simulatorTypes: data.simulatorTypes || {}
     };
+
+
+    console.log('Form data to be updated:', formData);
     await handleEditSubmit(formData);
-  };
+    
+    
+  } catch (error) {
+    console.error('Form submission error:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to prepare update data',
+      icon: 'error',
+      background: '#171717',
+      color: '#ffffff'
+    });
+  }
+};
+
 
   return (
-    <div className="min-h-screen pt-8 flex items-center justify-center bg-gray-900 overflow-hidden max-w-[1820px] mx-auto">
+    <div className="min-h-screen  pt-16 flex items-center justify-center bg-gray-900 overflow-hidden max-w-[1820px] mx-auto">
       <div className="w-full my-auto mx-auto">
+     
+        
         <form onSubmit={handleSubmit(onSubmit)} className="bg-gray-800 mt-4 my-auto rounded-lg shadow-xl p-4 md:p-6 lg:px-6 lg:p-3">
           <div className="xl:flex">
             <div className="flex-1 pr-8">
@@ -656,6 +925,7 @@ export default function UpdateShot() {
                       <p className="mt-1 text-xs text-red-400">Title is required</p>
                     )}
                   </div>
+                     <ToastContainer/>
 
                   <div className="relative">
                     <div className="flex mt-2 gap-4">
@@ -1039,224 +1309,246 @@ export default function UpdateShot() {
               </div>
             </div>
 
-            <div className="mb-4 flex-1 xl:border-l border-gray-700 lg:pl-8">
-              <div className="flex items-center mb-4">
-                <FiImage className="mr-2 text-blue-400" />
-                <h2 className="font-semibold">Media</h2>
-              </div>
+        <div className="mb-4 flex-1 xl:border-l border-gray-700 lg:pl-8">
+  <div className="flex items-center mb-4">
+    <FiImage className="mr-2 text-blue-400" />
+    <h2 className="font-semibold">Media</h2>
+  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  {(videoPreview || isYouTubeLink || isVimeoLink) ? (
-                    <div className="">
-                      <h4 className="text-xs font-medium mb-2">Video Preview</h4>
-                      <div className="w-full bg-black overflow-hidden rounded-lg shadow-md aspect-video">
-                        {videoPreview && (
-                          <video
-                            src={videoPreview}
-                            controls
-                            className="w-full h-full object-contain"
-                            ref={(el) => setVideoElement(el)}
-                          />
-                        )}
-                        {isYouTubeLink && (
-                          <iframe
-                            src={`https://www.youtube.com/embed/${getYouTubeId(watch("youtubeLink"))}`}
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full"
-                          ></iframe>
-                        )}
-                        {isVimeoLink && (
-                          <iframe
-                            src={`https://player.vimeo.com/video/${getVimeoId(watch("youtubeLink"))}`}
-                            frameBorder="0"
-                            allow="autoplay; fullscreen; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full"
-                          ></iframe>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-4 w-full h-[180px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
-                      <div className="text-center text-gray-500">
-                        <FiImage className="mx-auto text-4xl mb-2" />
-                        <p className="text-xs">No video selected</p>
-                        <p className="text-xs text-gray-400">Upload a video to see preview here</p>
-                      </div>
-                    </div>
-                  )}
-                  <label className="block text-xs font-medium mt-4 mb-1">Video</label>
-                  <div className="flex">
-                    <input
-                      {...register("youtubeLink")}
-                      className="flex-1 bg-gray-700 border border-gray-600 rounded-l-md py-1 px-3 focus:outline-none"
-                      placeholder="Upload a video or paste YouTube/Vimeo link"
-                      value={selectedVideo ? selectedVideo.name : watch("youtubeLink") || ""}
-                      onChange={(e) => {
-                        if (!selectedVideo) {
-                          setValue("youtubeLink", e.target.value);
-                        }
-                      }}
-                      readOnly
-                    />
-                    
-                    <label className="bg-red-600 hover:bg-red-700 px-4 rounded-r-md flex items-center transition-colors cursor-pointer">
-                      <input
-                        type="file"
-                        accept="video/*"
-                        className="hidden"
-               
-                        disabled
-                      />
-                      <FiUpload className="mr-1" />
-                      <span className="text-sm hidden sm:inline">Upload</span>
-                    </label>
-
-                    {selectedVideo && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedVideo(null);
-                          setVideoPreview(null);
-                          setValue("youtubeLink", "");
-                        }}
-                        className="ml-2 text-red-500 hover:text-red-400 flex items-center"
-                        disabled
-                      >
-                        <FiX />
-                      </button>
-                    )}
-                  </div>
-
-                  <div>
-  <label className="block text-xs font-medium mb-2 mt-2 text-white">Thumbnail</label>
-  {videoThumbnail && (
-    <img
-      src={videoThumbnail}
-      alt="Video Thumbnail"
-      className="mt-2 w-[24%] h-[24%] object-cover rounded-md border border-gray-600"
-    />
-  )}
-  {!videoThumbnail && (
-    <div className="w-36 h-[140px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
-      <div className="text-center text-gray-500">
-        <FiImage className="mx-auto text-4xl mb-2" />
-        <p className="text-xs">No thumbnail available</p>
-      </div>
-    </div>
-  )}
-</div>
-                </div>
-  {
-
-    shotData?.data?.timecodes.length > 0 &&               <div className="space-y-2">
-    {/* Interest Points Heading */}
-    <div className="flex items-center mb-2">
-  
-      <h3 className="font-semibold text-sm">Interest Points</h3>
-    </div>
-  
-    {/* Timecodes List */}
-    <div className="bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl">
-      {shotData?.data?.timecodes?.map((tc, idx) => ( 
-        <div 
-          key={idx} 
-          className={`flex gap-3 items-center hover:bg-[#3a3a3a] p-2 pb-2 cursor-default transition-colors ${
-            idx+1 === shotData?.data?.timecodes.length ? '' : 'border-b border-gray-600'
-          }`}
-        >
-          <img 
-            src={tc.image} 
-            className='w-32 h-20 object-cover rounded-md'
-            alt={`Timecode at ${tc.time}`}
-          />
-          <div className=''>
-            <p className="font-semibold font-mono text-sm">{tc.time}</p>
-            <p className="text-gray-300 text-xs">{tc.label}</p>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div>
+      {/* Video Preview Section - unchanged */}
+      {(videoPreview || isYouTubeLink || isVimeoLink) ? (
+        <div className="">
+          <h4 className="text-xs font-medium mb-2">Video Preview</h4>
+          <div className="w-full bg-black overflow-hidden rounded-lg shadow-md aspect-video">
+            {videoPreview && (
+              <video
+                src={videoPreview}
+                controls
+                className="w-full h-full object-contain"
+                ref={(el) => setVideoElement(el)}
+              />
+            )}
+            {isYouTubeLink && (
+              <iframe
+                src={`https://www.youtube.com/embed/${getYouTubeId(watch("youtubeLink"))}`}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            )}
+            {isVimeoLink && (
+              <iframe
+                src={`https://player.vimeo.com/video/${getVimeoId(watch("youtubeLink"))}`}
+                frameBorder="0"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            )}
           </div>
         </div>
-      ))}
+      ) : (
+        <div className="mt-4 w-full h-[180px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+          <div className="text-center text-gray-500">
+            <FiImage className="mx-auto text-4xl mb-2" />
+            <p className="text-xs">No video selected</p>
+            <p className="text-xs text-gray-400">Upload a video to see preview here</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Video Input Section - unchanged */}
+      <label className="block text-xs font-medium mt-4 mb-1">Video</label>
+      <div className="flex">
+        <input
+          {...register("youtubeLink")}
+          className="flex-1 bg-gray-700 border border-gray-600 rounded-l-md py-1 px-3 focus:outline-none"
+          placeholder="Upload a video or paste YouTube/Vimeo link"
+          value={selectedVideo ? selectedVideo.name : watch("youtubeLink") || ""}
+          onChange={(e) => {
+            if (!selectedVideo) {
+              setValue("youtubeLink", e.target.value);
+            }
+          }}
+          readOnly
+        />
+        
+        <label className="bg-red-600 hover:bg-red-700 px-4 rounded-r-md flex items-center transition-colors cursor-pointer">
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            disabled
+          />
+          <FiUpload className="mr-1" />
+          <span className="text-sm hidden sm:inline">Upload</span>
+        </label>
+
+        {selectedVideo && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedVideo(null);
+              setVideoPreview(null);
+              setValue("youtubeLink", "");
+            }}
+            className="ml-2 text-red-500 hover:text-red-400 flex items-center"
+            disabled
+          >
+            <FiX />
+          </button>
+        )}
+      </div>
+
+      {/* Thumbnail Section - unchanged */}
+      {/* <div>
+        <label className="block text-xs font-medium mb-2 mt-2 text-white">Thumbnail</label>
+        {videoThumbnail && (
+          <img
+            src={videoThumbnail}
+            alt="Video Thumbnail"
+            className="mt-2 w-[24%] h-[24%] object-cover rounded-md border border-gray-600"
+          />
+        )}
+        {!videoThumbnail && (
+          <div className="w-36 h-[140px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+            <div className="text-center text-gray-500">
+              <FiImage className="mx-auto text-4xl mb-2" />
+              <p className="text-xs">No thumbnail available</p>
+            </div>
+          </div>
+        )}
+      </div> */}
+    </div>
+
+    {/* Right Column - Interest Points */}
+  {/* Right Column - Interest Points */}
+<div className="space-y-6">
+  {/* Debug Info */}
+
+
+  {/* Existing Interest Points */}
+  {shotData?.data?.timecodes?.length > 0 ? (
+    <div className="space-y-2">
+      <div className="flex items-center mb-2">
+        <h3 className="font-semibold text-sm">Existing Interest Points</h3>
+        <span className="ml-2 text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
+          {timecodes.length} points
+        </span>
+      </div>
+
+      <div className="bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl max-h-80 overflow-y-auto">
+        {shotData.data.timecodes.map((tc, idx) => ( 
+          <div 
+            key={idx} 
+            className={`flex gap-3 items-center hover:bg-[#3a3a3a] p-2 pb-2 cursor-move transition-colors ${
+              idx+1 === timecodes.length ? '' : 'border-b border-gray-600'
+            }`}
+          >
+            <img 
+              src={tc.image} 
+              className='w-32 h-20 object-cover rounded-md'
+              alt={`Timecode at ${tc.time}`}
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/128x80/333/fff?text=Image+Error';
+              }}
+            />
+            <div className='flex-1'>
+              <p className="font-semibold font-mono text-sm">{tc.time}</p>
+              <p className="text-gray-300 text-xs">{tc.label}</p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDeleteTimeCode(tc.time, tc.label, tc.image)
+              }}
+              className="text-red-500 hover:text-red-400 p-1 rounded"
+              title="Delete timecode"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <div className="text-center text-gray-500 py-8 border border-dashed border-gray-600 rounded-lg">
+      <FiClock className="mx-auto text-3xl mb-2" />
+      <p className="text-sm">No interest points yet</p>
+      <p className="text-xs">Add your first interest point below</p>
+    </div>
+  )}
+
+
+  {timecodes.map((tc, idx) => ( 
+          <div 
+            key={idx} 
+            className={`flex gap-3 items-center hover:bg-[#3a3a3a] p-2 pb-2 cursor-move transition-colors ${
+              idx+1 === timecodes.length ? '' : 'border-b border-gray-600'
+            }`}
+          >
+            <img 
+              src={tc.image} 
+              className='w-32 h-20 object-cover rounded-md'
+              alt={`Timecode at ${tc.time}`}
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/128x80/333/fff?text=Image+Error';
+              }}
+            />
+            <div className='flex-1'>
+              <p className="font-semibold font-mono text-sm">{tc.time}</p>
+              <p className="text-gray-300 text-xs">{tc.label}</p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeTimecode(idx);
+              }}
+              className="text-red-500 hover:text-red-400 p-1 rounded"
+              title="Delete timecode"
+            >
+              <IoClose className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+  {/* Add New Interest Point - unchanged */}
+  <div className="">
+    <label className="block text-xs font-medium mb-2 text-white">Add New Interest Point</label>
+    <div className="bg-gray-700 p-4 rounded-xl">
+      <div className="flex flex-col sm:flex-row overflow-hidden sm:items-center gap-2 mb-3">
+        <input
+          type="text"
+          className="flex-1 bg-gray-800 rounded px-3 py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
+          placeholder="Short Description"
+          value={currentDesc}
+          onChange={(e) => setCurrentDesc(e.target.value)}
+        />
+        <input
+          type="text"
+          className="sm:w-32 bg-gray-800 rounded px-3 py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
+          placeholder="Timecode (mm:ss)"
+          value={currentTime}
+          onChange={(e) => setCurrentTime(e.target.value)}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={handleAddTimecode}
+        className="bg-blue-500 hover:bg-blue-600 ml-auto flex justify-end text-right text-white text-xs font-medium px-4 py-1 rounded"
+        disabled={!currentDesc || !currentTime || isUploading}
+      >
+        {generateLoading ? 'Generating...' : 'ADD'}
+      </button>
     </div>
   </div>
-  }
-
-
-
-     <div className="">
-                    <label className="block text-xs font-medium mb-2 text-white">Interest Point</label>
-                    
-                    <div className="bg-gray-700 p-4   rounded-xl">
-                      <div className="flex flex-col sm:flex-row overflow-hidden sm:items-center gap-2 mb-3">
-                        <input
-                          type="text"
-                          className="flex-1 bg-gray-800 rounded px-3 py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
-                          placeholder="Short Description"
-                          value={currentDesc}
-                          onChange={(e) => setCurrentDesc(e.target.value)}
-                        />
-                        <input
-                          type="text"
-                          className="sm:w-32 bg-gray-800 rounded px-3 py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
-                          placeholder="Timecode (mm:ss)"
-                          value={currentTime}
-                          onChange={(e) => setCurrentTime(e.target.value)}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleAddTimecode}
-                        className="bg-blue-500 hover:bg-blue-600 ml-auto flex justify-end text-right text-white text-xs font-medium px-4 py-1 rounded"
-                        disabled={!currentDesc || !currentTime || isUploading}
-                      >
-                        {generateLoading ? 'Generating...' : 'ADD'}
-                      </button>
-                    </div>
-  
-                    {/* List of Timecodes */}
-                    <ul className="mt-4 divide-y  space-y-4 scrollbar-thin-gray overflow-y-scroll divide-gray-600 rounded text-xs text-white overflow-hidden">
-                      {timecodes.map((tc, idx) => (
-                        <li
-                          key={idx}
-                          className="relative px-3 py-4 text-gray-400 cursor-move group"
-                          draggable
-                          onDragStart={(e) => e.dataTransfer.setData('text/plain', idx)}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            const draggedIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                            handleReorder(draggedIdx, idx);
-                          }}
-                        >
-                          {tc.image && (
-                            <img 
-                              src={tc.image} 
-                              alt="Timecode thumbnail" 
-                              className="absolute left-24  top-[40%] -translate-y-1/2 w-8 h-8 object-cover rounded"
-                            />
-                          )}
-                      
-                          <AiOutlineMenu className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl" />
-                          
-                          <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            {tc.label}
-                          </span>
-                          <span className="absolute right-10 top-1/2 -translate-y-1/2">{tc.time}</span>
-                        
-                          <button
-                            onClick={() => removeTimecode(idx)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <IoClose className="text-red-500 hover:text-red-400" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-              </div>
-            </div>
+</div>
+  </div>
+</div>
           </div>
 
           <section className="">

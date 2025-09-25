@@ -283,7 +283,7 @@ const handleAddTimecode = async () => {
     console.error("Thumbnail generation error:", error);
     Swal.fire({
       title: "Error",
-      text:  isYouTubeLink ? 'Access to this video was denied by YouTube’s permissions policy.' : "Access to this video was denied by Vimeo’s permissions policy.",
+      text:  error.message,
       icon: "error",
       background: "#1a1a1a",
       color: "#ffffff"
@@ -889,15 +889,15 @@ const onSubmit = async (data) => {
 
   console.log(data.youtubeLink, "kuryme er youtube er heda")
 
-  if(data.youtubeLink.length < 1){
+  // if(data.youtubeLink.length < 1){
 
 
 
-    toast.error("Video is Required")
-      return;
+  //   // toast.error("Video is Required")
+  //     return;
       
 
-    }
+  //   }
 
 
   if (isUploading) return;
@@ -979,7 +979,7 @@ const onSubmit = async (data) => {
 
     if(!data.youtubeLink){
 
-      return alert("Video is Required")
+      // return alert("Video is Required")
       
 
     }
@@ -989,7 +989,7 @@ const onSubmit = async (data) => {
 
 
     if(!data.youtubeLink){
-      return toast.error("Video is Required")
+      // return toast.error("Video is Required")
     }
     const resp = await axiosInstance.post(`${base_url}/shot/create`, data);
 

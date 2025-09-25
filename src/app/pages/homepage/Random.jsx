@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, EffectCoverflow } from 'swiper/modules';
+import { Navigation, EffectCoverflow, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/effect-coverflow';
@@ -31,6 +31,7 @@ function Random() {
   const swiperRef = useRef(null);
   const videoRefs = useRef({});
   const [showSimulationType, setSimulationType] = useState(false);
+  const  userRole = 'userRole'
 
   useEffect(() => {
     const handlePlay = (event) => {
@@ -248,13 +249,13 @@ function getVideoThumbnail(url, timecode = '0:00') {
     //   return getCloudinaryThumbnailWithTime(url, seconds);
     // }
 
-    if (isYouTubeUrl(videoUrl)) {
-      return getYouTubeThumbnail(url);
-    }
+    // if (isYouTubeUrl(videoUrl)) {
+    //   return getYouTubeThumbnail(url);
+    // }
 
-    if (isVimeoUrl(videoUrl)) {
-      return getVimeoThumbnail(url);
-    }
+    // if (isVimeoUrl(videoUrl)) {
+    //   return getVimeoThumbnail(url);
+    // }
 
     return null;
   } catch (err) {
@@ -759,10 +760,10 @@ function getVideoThumbnail(url, timecode = '0:00') {
                   )
                 ))}
                 
-                <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                <div className={`transition-all duration-500 ease-in-out  ${
                   !showSimulationType 
                     ? 'max-h-0 opacity-0' 
-                    : 'max-h-[2400px] opacity-100'
+                    : ' opacity-100'
                 }`}>
                   {filters.filter(item => item.id !== 21).slice(0, 9).map((filterGroup, idx) => (
                     !filterGroup?.item ? (
@@ -1049,9 +1050,9 @@ function getVideoThumbnail(url, timecode = '0:00') {
           </section>
         </section>
 
-        <section className="lg:hidden overflow-hidden 2xl:min-w-[250px]"></section>
+        <section className="lg:hidden border overflow-hidden 2xl:min-w-[250px]"></section>
 
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-[90%] mx-auto px-4 py-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 text-center drop-shadow-md">
             Random Shots
           </h1>
@@ -1064,32 +1065,56 @@ function getVideoThumbnail(url, timecode = '0:00') {
             </button>
           </div>
 
-          <div className="mb-6 max-w-md mx-auto"></div>
+          <div className="mb-6 -md mx-auto"></div>
 
           <div className="relative max-w-full overflow-hidden lg:ml-44 mx-auto flex justify-center mb-8 h-[80vh]">
             <Swiper
-              modules={[Navigation, EffectCoverflow]}
-              effect="coverflow"
-              coverflowEffect={{
-                rotate: 30,
-                stretch: 0,
-                depth: 100,
-                modifier: 1,
-                slideShadows: true,
-              }}
-              spaceBetween={30}
-              slidesPerView={1}
-              centeredSlides={true}
-              navigation
-              className="h-full w-full"
-              breakpoints={{
-                640: { slidesPerView: 1 },
-                768: { slidesPerView: 1 },
-                1024: { slidesPerView: 2 },
-                1800: { slidesPerView: 2 }
-              }}
-              onSwiper={(swiper) => (swiperRef.current = swiper)}
-              onReachEnd={handleReachEnd}
+               modules={[Navigation, EffectCoverflow, Keyboard]}
+    effect="coverflow"
+    coverflowEffect={{
+      rotate: 30,
+      stretch: 0,
+      depth: 100,
+      modifier: 1,
+      slideShadows: true,
+    }}
+    spaceBetween={30}
+    slidesPerView={1}
+    centeredSlides={true}
+    navigation
+    keyboard={{
+      enabled: true,
+      onlyInViewport: true,
+    }}
+    className="h-full w-full"
+    breakpoints={{
+      640: { 
+        slidesPerView: 1,
+        keyboard: {
+          enabled: true
+        }
+      },
+      768: { 
+        slidesPerView: 1,
+        keyboard: {
+          enabled: true
+        }
+      },
+      1024: { 
+        slidesPerView: 1.1,
+        keyboard: {
+          enabled: true
+        }
+      },
+      1800: { 
+        slidesPerView: 1.1,
+        keyboard: {
+          enabled: true
+        }
+      }
+    }}
+    onSwiper={(swiper) => (swiperRef.current = swiper)}
+    onReachEnd={handleReachEnd}
             >
               <AnimatePresence>
                 {allShots.map((shot) => {
@@ -1113,142 +1138,520 @@ function getVideoThumbnail(url, timecode = '0:00') {
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 0.9 }}
     transition={{ duration: 0.3 }}
-    className="relative h-full w-full rounded-xl overflow-hidden shadow-lg bg-[#1a1a1a] flex flex-col border border-gray-700"
+    className="relative h-full w-full rounded-xl p-8  shadow-lg bg-[#1a1a1a] flex flex-col border border-gray-700"
   >
     {/* Video container */}
-    <div className="h-[40vh] min-h-[300px] w-full relative flex-shrink-0 bg-black">
-      <VideoPlayer shot={shot} />
+
+   <div className='flex'>
+         <section className={` ${shot.timecodes && shot.timecodes.length > 0 ? 'xl:w-[70%]' : 'xl:w-[70%]'} `}>
+
+
+{shot.youtubeLink ? (
+  <div>
+
+
+    <div className='py-2'>
+
+
+
+
+<div className='flex items-center  flex-wrap mb-2'>
+
+  <h4 className='font-semibold text-xs flex-wrap  whitespace-nowrap lg:text-base M'>Simulation Category:</h4>
+     {  shot?.simulatorTypes?.particles &&  shot?.simulatorTypes?.particles?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4  ">
+                      {g}
+                    </span>
+                  ))}
+
+
+                  
+                  {   shot?.simulatorTypes?.rigidbodies &&  shot?.simulatorTypes?.rigidbodies?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+                  {  shot?.simulatorTypes?.softBodies &&  shot?.simulatorTypes?.softBodies?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.clothgroom &&  shot?.simulatorTypes?.clothgroom?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+                  {shot?.simulatorTypes?.magicAbstract &&  shot?.simulatorTypes?.magicAbstract?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+                     {  shot?.simulatorTypes?.crowd &&   shot?.simulatorTypes?.crowd?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.mechanicsTech &&  shot?.simulatorTypes?.mechanicsTech?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.ompositing &&  shot?.simulatorTypes?.compositing?.map((g, idx) => (
+                    <span key={idx} className=" l text-gray-200 underline text-xs lg:text-base font-normal ml-4 ">
+                      {g}
+                    </span>
+                  ))}
+
+</div>
+
+             {/* tag */}
+{/* 
+             <div className=' flex flex-wrap gap-4'>
+
+              {
+                shot?.tags?.map((item, idx)=> (
+                  <div key={idx + 1} className='bg-gray-800 py-2 px-4 rounded'>
+                    <h1>{item}</h1>
+                  </div>
+                ))
+              }
+             </div> */}
     </div>
-
-    {/* Content container */}
-    <div className="flex-1 overflow-y-auto p-4 flex flex-col">
-      {/* Header section */}
-      <div className='mb-4'>
-        <h2 className="text-xl md:text-2xl font-bold text-white mb-2">{shot.title}</h2>
-        
-        {/* Simulation Categories */}
-      {
-
-        shot?.simulatorTypes?.length > 0 &&
-          <div className='flex flex-wrap items-center gap-1 mb-3'>
-          <span className="text-xs font-semibold text-gray-400">Categories:</span>
-          {Object.entries(shot.simulatorTypes || {}).flatMap(([category, values]) => 
-            Array.isArray(values) ? values.map((value, idx) => (
-              <span 
-                key={`${category}-${idx}`} 
-                className="text-xs bg-[#2a2a2a] text-gray-200 px-2 py-1 rounded border border-gray-600"
-              >
-                {value}
-              </span>
-            )) : []
-          )}
-        </div>
-      }
-
-        {/* Tags */}
-        {shot.tags?.length > 0 && (
-          <div className='flex flex-wrap gap-2 mb-4'>
-            {shot.tags.map((tag, idx) => (
-              <span 
-                key={idx} 
-                className="text-xs bg-[#333333] text-gray-300 px-2 py-1 rounded border border-gray-600"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Description */}
-        {shot.description && (
-          <p className="text-sm text-gray-300 mb-4">{shot.description}</p>
-        )}
+    {/* Video Player */}
+    {shot.youtubeLink.includes('youtu') ? (
+      <iframe
+        id="video-player"
+        width="100%"
+        height="460"
+        src={getYouTubeEmbedUrl(shot.youtubeLink)}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className='min-h-[60vh]'
+      ></iframe>
+    ) : shot.youtubeLink.includes('vimeo.com') ? (
+      <div className="relative pb-[56.25%] h-0 overflow-hidden">
+        <iframe
+          id="video-player"
+          src={getVimeoEmbedUrl(shot.youtubeLink)}
+          className="absolute top-0 left-0 w-full h-full"
+          frameBorder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        ></iframe>
       </div>
+    ) : (
+      <video id="cloudinary-video" width="100%" height="460" controls>
+        <source src={shot.youtubeLink} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    )}
 
-      {/* Interest Points */}
-      {shot.timecodes?.length > 0 && (
-        <div className="mb-6">
-          <h3 className="font-semibold text-lg text-white mb-3">Interest Points</h3>
-          <div className="space-y-3">
-            {shot.timecodes.map((tc, idx) => (
-              <div 
-                key={idx}
-                onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink, shot._id)}
-                className="flex gap-3 items-start p-3 bg-[#2a2a2a] rounded-lg hover:bg-[#3a3a3a] transition-colors cursor-pointer border border-gray-600"
-              >
-                <div className="flex-shrink-0 w-24 h-16 relative overflow-hidden rounded border border-gray-700">
-                  <Image
-                    src={tc.image}
-                    alt={tc.label}
-                    layout="fill"
-                    objectFit="cover"
-                    className="absolute inset-0"
-                  />
-                </div>
-                <div>
-                  <p className="font-mono text-sm font-semibold text-blue-400">{tc.time}</p>
-                  <p className="text-xs text-gray-300">{tc.label}</p>
-                </div>
+ 
+  </div>
+) : (
+  <section className='flex items-center '>
+  
+ <FaTrash onClick={()=> handleDelete(shot?._id, shot?.title)} className='text-red-500 absolute top-12 cursor-pointer left-2'/>
+
+<Link href={`/admin/edit/${shot?._id}`}>
+ <FaEdit  className='text-blue-500 absolute top-20 cursor-pointer left-2'/>
+ 
+ </Link>
+             <h2 className="lg:text-2xl mb-1  font-semibold">{shot.title || 'Shot Title'}</h2>
+</section>
+
+)}
+
+  {/* <div className="mt-4 text-left  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
+              <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
+
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl ">
+          {shot.timecodes.map((tc, idx) => ( 
+            <div 
+              key={idx} 
+              className={`flex gap-3  items-center hover:bg-[#3a3a3a] p-2  pb-2  cursor-pointer transition-colors ${idx+1 === shot.timecodes.length ? '' : 'border-b'}`}
+              onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink , tc.time)}
+
+
+
+            >
+               <img  src={tc.image} className='w-32 h-20'/>
+
+
+            <div className=''>
+                <p className=" font-semibold font-mono mr-3">{tc.time}</p>
+              <p className="text-gray-300">{tc.label}</p>
+            </div>
+            </div>
+          ))}
+        </div>
+      </div> */}
+    {shot.timecodes && shot.timecodes.length > 0 ? (
+
+      
+      <div className="mt-4 text-left  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
+              <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
+
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl ">
+          {shot.timecodes.map((tc, idx) => ( 
+            <div 
+              key={idx} 
+              className={`flex gap-3  items-center hover:bg-[#3a3a3a] p-2  pb-2  cursor-pointer transition-colors ${idx+1 === shot.timecodes.length ? '' : 'border-b'}`}
+              onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink , tc.time)}
+
+
+
+            >
+               <img  src={tc.image} className='w-32 h-20'/>
+
+
+            <div className=''>
+                <p className=" font-semibold font-mono mr-3">{tc.time}</p>
+              <p className="text-gray-300">{tc.label}</p>
+            </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )   : <div className='mt-4  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg'>
+      
+      
+      <h4>No Intrest point added</h4>
+      
+      
+      </div>}
+        {/* Rest of your existing modal content */}
+        <div className="text-left   pace-y-2">
+          
+   
+          {/* <p className="text-sm text-gray-300">{shot.description || 'No description available.'}</p> */}
+
+          <div className="border-t max-w-full overflow-x-scroll scrollbar-hide border-gray-400">
+            <section className="lg:flex space-y-1 justify-between gap-8">
+              {/* Left Side */}
+              <div className="space-y-2 mt-4">
+                <h4 className="font-semibold text-white text-xs">
+                  Focal Length:
+                  {shot?.focalLength?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+                <h4 className="font-semibold text-white text-xs">
+               <span className='whitespace-nowrap'>Lighting Conditons:</span>
+                  {shot?.lightingConditions?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+                <h4 className="font-semibold text-white text-xs">
+                 Video Type:
+                  {shot?.videoType?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+                <h4 className="font-semibold text-white text-xs">
+                 Reference Type:
+                  {shot?.referenceType?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+     
+                      {/* <h4 className="font-semibold text-white text-xs">
+                        Cinematographer:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.cinematographer}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Production Designer:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.productionDesigner}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Costume Designer:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.costumeDesigner}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Editor:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.editor}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Colorist:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.colorist}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Actors:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.actors}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Shot Time:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.shotTime}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Time Period:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.timePeriod}</span>
+                      </h4> */}
+                    </div>
+
+                    {/* Middle */}
+
+
+                    
+                    <div className="space-y-2 mt-4">
+                               <h4 className="font-semibold text-white text-xs">
+                 Video Quality:
+                  {shot?.videoQuality?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+                               <h4 className="font-semibold text-white text-xs">
+                 Video Speed:
+                  {shot?.videoSpeed?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+                               <h4 className="font-semibold text-nowrap  text-white text-xs">
+                 Simulation Type:
+                  {  shot?.simulatorTypes?.particles &&  shot?.simulatorTypes?.particles?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.rigidbodies &&  shot?.simulatorTypes?.rigidbodies?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                  {  shot?.simulatorTypes?.softBodies &&  shot?.simulatorTypes?.softBodies?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.clothgroom &&  shot?.simulatorTypes?.clothgroom?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                  {shot?.simulatorTypes?.magicAbstract &&  shot?.simulatorTypes?.magicAbstract?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                     {  shot?.simulatorTypes?.crowd &&   shot?.simulatorTypes?.crowd?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.mechanicsTech &&  shot?.simulatorTypes?.mechanicsTech?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                  {   shot?.simulatorTypes?.ompositing &&  shot?.simulatorTypes?.compositing?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+
+
+
+                  <h4 className="font-semibold text-white text-xs">
+                 Simulation Scale:
+                  {shot?.simulationSize?.map((g, idx) => (
+                    <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                      {g}
+                    </span>
+                  ))}
+                </h4>
+                      {/* <h4 className="font-semibold text-white text-xs"> */}
+                        {/* Aspect Ratio:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.aspectRatio}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Format:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.format}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Frame Size:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.frameSize}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Shot Type:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.shotType}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Lens Size:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.lensSize}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Composition:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.composition}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Lighting:
+                        {shot?.lightingStyle?.map((l, idx) => (
+                          <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                            {l}
+                          </span>
+                        ))}
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Lighting Type:
+                        {shot?.lightingType?.map((l, idx) => (
+                          <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                            {l}
+                          </span>
+                        ))}
+                      </h4> */}
+                    </div>
+
+                    {/* Right Side */}
+                    <div className="space-y-2 mt-4">
+                      <h4 className="font-semibold text-white text-xs">
+                        Style:
+                        {shot?.simulationStyle?.map((t, idx) => (
+                          <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                            {t}
+                          </span>
+                        ))}
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Motion Style:
+                        {shot?.motionStyle?.map((t, idx) => (
+                          <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                            {t}
+                          </span>
+                        ))}
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Emitter Speed:
+                        {shot?.emitterSpeed?.map((t, idx) => (
+                          <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                            {t}
+                          </span>
+                        ))}
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Software:
+                        {shot?.simulationSoftware?.map((t, idx) => (
+                          <span key={idx} className="text-xs font-normal ml-4 text-[#999]">
+                            {t}
+                          </span>
+                        ))}
+                      </h4>
+                      {/* <h4 className="font-semibold text-white text-xs">
+                        Interior/Exterior:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.interiorExterior}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Location Type:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.filmingLocation}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Set:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.set}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Story Location:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.storyLocation}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Camera:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.camera}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Lens:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.lens}</span>
+                      </h4>
+                      <h4 className="font-semibold text-white text-xs">
+                        Film Stock / Resolution:
+                        <span className="text-xs font-normal ml-4 text-[#999]">{shot?.filmStockResolution}</span>
+                      </h4> */}
               </div>
-            ))}
+            </section>
           </div>
+        </div>
+
+        </section>
+
+   <section>
+
+
+
+         {shot.timecodes && shot.timecodes.length > 0 ? (
+
+      
+      <div className="mt-4 text-left  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg">
+              <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
+
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl ">
+          {shot.timecodes.map((tc, idx) => ( 
+            <div 
+              key={idx} 
+              className={`flex gap-3  items-center hover:bg-[#3a3a3a] p-2  pb-2  cursor-pointer transition-colors ${idx+1 === shot.timecodes.length ? '' : 'border-b'}`}
+              onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink , tc.time)}
+
+
+
+            >
+               <img  src={tc.image} className='w-32 h-20'/>
+
+
+            <div className=''>
+                <p className=" font-semibold font-mono mr-3">{tc.time}</p>
+              <p className="text-gray-300">{tc.label}</p>
+            </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )   : <div className='mt-4  lg:hidden max-h-full overflow-y-scroll lg:p-3 lg:ml-2 rounded-lg'>
+      
+      
+      <h4>No Intrest point added</h4>
+      
+      
+      </div>}
+
+        <div className="mt-4 lg:mt-0 lg:w-96 lg:ml-4">
+    <div className="hidden lg:block h-full overflow-y-scroll scrollbar-thin-gray lg:p-3 rounded-lg">
+      <h3 className="font-semibold text-2xl mb-2">Interest Points</h3>
+      
+      {shot.timecodes && shot.timecodes.length > 0 ? (
+        <div className="space-y-2 bg-[#2a2a2a] lg:p-3 p-2 rounded-3xl">
+          {shot.timecodes.map((tc, idx) => ( 
+            <div 
+              key={idx} 
+              className={`flex gap-3 items-center hover:bg-[#3a3a3a] p-2 pb-2 cursor-pointer transition-colors ${idx+1 === shot.timecodes.length ? '' : 'border-b border-gray-600'}`}
+              onClick={() => handleTimecodeClick(tc.time, shot.youtubeLink, tc.time)}
+            >
+              <img src={tc.image} alt={tc.label} className='w-32 h-20 object-cover rounded-lg'/>
+              <div className=''>
+                <p className="font-semibold font-mono mr-3">{tc.time}</p>
+                <p className="text-gray-300">{tc.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-[#2a2a2a] lg:p-6  p-4 rounded-3xl">
+          <p className="text-gray-400 italic">No interest points available for this shot</p>
         </div>
       )}
-
-      {/* Metadata - Bottom section */}
-      <div className="mt-auto pt-4 border-t border-gray-700">
-        <h3 className="text-sm font-semibold text-white mb-3">Technical Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-          {/* Column 1 */}
-          <div className="space-y-2">
-            {shot.focalLength?.length > 0 && (
-              <div>
-                <p className="font-semibold text-gray-400">Focal Length</p>
-                <p className="text-gray-300">{shot.focalLength.join(', ')}</p>
-              </div>
-            )}
-            {shot.lightingConditions?.length > 0 && (
-              <div>
-                <p className="font-semibold text-gray-400">Lighting</p>
-                <p className="text-gray-300">{shot.lightingConditions.join(', ')}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Column 2 */}
-          <div className="space-y-2">
-            {shot.videoType?.length > 0 && (
-              <div>
-                <p className="font-semibold text-gray-400">Video Type</p>
-                <p className="text-gray-300">{shot.videoType.join(', ')}</p>
-              </div>
-            )}
-            {shot.videoQuality?.length > 0 && (
-              <div>
-                <p className="font-semibold text-gray-400">Quality</p>
-                <p className="text-gray-300">{shot.videoQuality.join(', ')}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Column 3 */}
-          <div className="space-y-2">
-            {shot.simulationStyle?.length > 0 && (
-              <div>
-                <p className="font-semibold text-gray-400">Style</p>
-                <p className="text-gray-300">{shot.simulationStyle.join(', ')}</p>
-              </div>
-            )}
-            {shot.simulationSoftware?.length > 0 && (
-              <div>
-                <p className="font-semibold text-gray-400">Software</p>
-                <p className="text-gray-300">{shot.simulationSoftware.join(', ')}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
+  </div>
+     </section>
+   </div>
   </motion.div>
 </SwiperSlide>
                   );
