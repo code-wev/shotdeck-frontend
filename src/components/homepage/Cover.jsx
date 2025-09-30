@@ -73,12 +73,13 @@ export default function Cover() {
     );
   }
 
+  console.log(data, "baler data")
   return (
-    <div
+ <div
       ref={bgRef}
       className="w-full bg-cover bg-center m bg-no-repeat bg-fixed   min-h-screen"
       style={{
-        backgroundImage: `url(${ coverImg.src})`,
+        backgroundImage: `url(${selectedCoverPhoto || coverImg.src})`,
         backgroundPosition: '50% 0%',
       }}
     >
@@ -88,7 +89,8 @@ export default function Cover() {
   className="text-white encode-sans mt-6 text-center pt-12 2xl:pt-28 text-[22px] text-3xl 2xl:text-6xl font-bold px-4 md:px-10"
   style={{ textShadow: '0 4px 6px rgba(0,0,0,0.5)' }} // text-only drop shadow
 >
-  {data?.data[0]?.coverHeading || "THE INDUSTRY'S BEST RESEARCH TOOL"}
+  {data?.data[0]?.coverHeading
+}
 </h1>
 {/* 
       <div data-aos="fade-up" data-aos-duration="1500" className="flex justify-center">
@@ -101,7 +103,7 @@ export default function Cover() {
   className="text-white birthstone text-4xl text-center mt-3"
   style={{ textShadow: '0 4px 6px rgba(0,0,0,1)' }} // black, 100% opacity
 >
-  {data?.data[0]?.coverDescription || 'Find the perfect shots, create decks, share them with your crew'}
+  {data?.data[0]?.coverDescription }
 </p>
 
 

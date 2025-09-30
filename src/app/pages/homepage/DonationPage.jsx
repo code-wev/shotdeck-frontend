@@ -20,7 +20,7 @@ import { useGetSettingQuery } from '@/redux/api/shot';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function KuryemDonation() {
+export default function DonationPage() {
   const { data, isFetching } = useGetSettingQuery();
   const coverPhotos = data?.data[0]?.donation || [];
   const sponsorPhotos = data?.data[0]?.sponser || [];
@@ -70,6 +70,8 @@ export default function KuryemDonation() {
       </div>
     );
   }
+
+  console.log(data, "selected cover photo")
 
   return (
     <div
@@ -228,18 +230,18 @@ export default function KuryemDonation() {
           {sponsorPhotos.length === 0 && (
             <section className="mt-6">
               <div className='flex gap-4 overflow-hidden justify-between'>
-                <Image src={image1} className='w-24 h-24' alt="Sponsor 1" />
-                <Image src={image2} className='w-24 h-24' alt="Sponsor 2" />
-                <Image src={image4} className='w-24 h-24' alt="Sponsor 3" />
+                <Image src={image1} width={96} height={96} className='w-24 h-24' alt="Sponsor 1" />
+                <Image src={image2} className='w-24 h-24' width={96} height={96} alt="Sponsor 2" />
+                <Image src={image4} className='w-24 h-24' width={96} height={96} alt="Sponsor 3" />
               </div>
 
               <div className='flex mt-6 justify-between'>
-                <Image src={image3} className='w-44 h-24' alt="Sponsor 4" />
-                <Image src={image5} className='w-24 h-24' alt="Sponsor 5" />
+                <Image src={image3} className='w-44 h-24' width={96} height={96} alt="Sponsor 4" />
+                <Image src={image5} className='w-24 h-24' width={96} height={96} alt="Sponsor 5" />
               </div>
 
               <div className='flex justify-center mt-6'>
-                <Image src={image6} className='w-24 h-24' alt="Sponsor 6" />
+                <Image src={image6} className='w-24 h-24' width={96} height={96} alt="Sponsor 6" />
               </div>
             </section>
           )}

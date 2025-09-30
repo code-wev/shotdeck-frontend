@@ -1,4 +1,6 @@
-import Donation from '@/components/admin/Donation'
+
+
+import DonationPage from '@/app/pages/homepage/DonationPage'
 import React from 'react'
 
 export default function page() {
@@ -6,7 +8,7 @@ export default function page() {
     <div>
       
 
-      <Donation/>
+  <DonationPage/>
     </div>
   )
 }

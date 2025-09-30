@@ -1,6 +1,6 @@
 import React from 'react'
 import Donation from '../pages/homepage/Donation'
-import KuryemDonation from '../pages/homepage/KuryemDonation';
+import KuryemDonation from '../pages/homepage/DonationPage';
 
 
 
