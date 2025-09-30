@@ -72,7 +72,7 @@ export default function AddShot() {
   const [currentDesc, setCurrentDesc] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
-  const [thumbnailTimecode, setThumbnailTimecode] = useState("");
+  const [imageUrlThubnail, setThumbnailTimecode] = useState("");
   const [videoThumbnail, setVideoThumbnail] = useState(null);
   const [allTags, setAllTags] = useState([]);
   const [thumbnailSource, setThumbnailSource] = useState("default");
@@ -225,7 +225,7 @@ const handleAddTimecode = async () => {
 
       // Validate against duration
       if (timeInSeconds > video.duration) {
-        throw new Error(`Timecode exceeds video duration `);
+        throw new Error(`Timecode exceeds video duration`);
       }
 
       // Seek to timecode
@@ -251,7 +251,7 @@ const handleAddTimecode = async () => {
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert to image
+      // Convert to image and upload to Bunny.net
       imageUrl = await new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
           if (!blob) {
@@ -265,16 +265,20 @@ const handleAddTimecode = async () => {
           } catch (uploadError) {
             reject(uploadError);
           }
-        }, 'image/jpeg', 0.9); // 90% quality
+        }, 'image/jpeg', 0.9);
       });
     } else {
       throw new Error("No valid video source available");
     }
 
-    // Add successful timecode
+    // Add successful timecode with the uploaded image URL
     setTimecodes((prev) => [
       ...prev,
-      { label: currentDesc, time: currentTime, image: imageUrl },
+      { 
+        label: currentDesc, 
+        time: currentTime, 
+        image: imageUrl // This is the Bunny.net URL
+      },
     ]);
     setCurrentDesc("");
     setCurrentTime("");
@@ -283,7 +287,7 @@ const handleAddTimecode = async () => {
     console.error("Thumbnail generation error:", error);
     Swal.fire({
       title: "Error",
-      text:  error.message,
+      text: error.message,
       icon: "error",
       background: "#1a1a1a",
       color: "#ffffff"
@@ -292,7 +296,7 @@ const handleAddTimecode = async () => {
     setIsUploading(false);
     setGenerateLoading(false);
   }
-};
+};;
 
 
 
@@ -317,6 +321,7 @@ const formatTime = (seconds) => {
 };
 
 // Helper function to upload to Bunny.net
+// Make sure this function is properly defined (you already have it)
 const uploadBlobToBunny = async (blob, fileName) => {
   const endpoint = `https://storage.bunnycdn.com/${STORAGE_ZONE}/${encodeURIComponent(fileName)}`;
   
@@ -583,7 +588,7 @@ useEffect(() => {
   // Thubnail genaration
 const generateThumbnailFromTimecode = async () => {
   const videoUrl = watch("youtubeLink");
-  const time = thumbnailTimecode;
+  const time = imageUrlThubnail;
 
   // Validate time format
   const timeRegex = /^(?:(\d{1,2}):)?([0-5]?\d):([0-5]\d)$/;
@@ -602,78 +607,6 @@ const generateThumbnailFromTimecode = async () => {
     setIsUploading(true);
     setGenerateLoading(true);
 
-    let videoDuration = 0;
-    let timeInSeconds = 0;
-
-    // Convert timecode to seconds first
-    const timeParts = time.split(':').map(Number);
-    timeInSeconds = timeParts.length === 2 
-      ? timeParts[0] * 60 + timeParts[1] 
-      : timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
-
-    // Get video duration based on source
-    if (isYouTubeLink && videoUrl) {
-      // For YouTube videos - use API to get duration
-      const videoId = getYouTubeId(videoUrl);
-      if (videoId) {
-        try {
-          const response = await fetch(`${base_url}/video/duration?videoId=${videoId}`);
-          if (response.ok) {
-            const data = await response.json();
-            videoDuration = data.duration || 0;
-          }
-        } catch (error) {
-          console.error("Error fetching YouTube duration:", error);
-        }
-      }
-    } 
-    else if (isVimeoLink && videoUrl) {
-      // For Vimeo videos - use API to get duration
-      const videoId = getVimeoId(videoUrl);
-      if (videoId) {
-        try {
-          const response = await fetch(`${base_url}/video/duration?vimeoId=${videoId}`);
-          if (response.ok) {
-            const data = await response.json();
-            videoDuration = data.duration || 0;
-          }
-        } catch (error) {
-          console.error("Error fetching Vimeo duration:", error);
-        }
-      }
-    } 
-    else if (videoPreview) {
-      // For local videos - use video element to get duration
-      const video = document.createElement('video');
-      video.src = videoPreview;
-      video.crossOrigin = 'anonymous';
-      
-      try {
-        await new Promise((resolve, reject) => {
-          video.onloadedmetadata = () => {
-            videoDuration = video.duration;
-            resolve();
-          };
-          video.onerror = () => reject(new Error("Failed to load video metadata"));
-          // Some browsers need this to trigger loading
-          video.load();
-        });
-      } catch (error) {
-        console.error("Error getting local video duration:", error);
-      }
-    }
-
-    // Check if we got a valid duration and if timecode exceeds it
-    if (videoDuration > 0 && timeInSeconds > videoDuration) {
-      Swal.fire({
-        title: "Error",
-        text: `Timecode  exceeds video duration `,
-        icon: "error",
-      });
-      return;
-    }
-
-    // Proceed with thumbnail generation
     let imageUrl;
     
     if (isYouTubeLink && videoUrl) {
@@ -682,7 +615,7 @@ const generateThumbnailFromTimecode = async () => {
       if (!response.ok) throw new Error("Timecode exceeds video duration");
       const blob = await response.blob();
       const fileName = `${Date.now()}_thumb.jpg`;
-      imageUrl = await uploadBlobToBunny(blob, fileName);
+      imageUrl = await uploadBlobToBunny(blob, fileName); // Upload to Bunny.net
     } 
     else if (isVimeoLink && videoUrl) {
       const apiUrl = `${base_url}/shot/dlpv?url=${encodeURIComponent(videoUrl)}&timestamp=${time}`;
@@ -690,7 +623,7 @@ const generateThumbnailFromTimecode = async () => {
       if (!response.ok) throw new Error("Vimeo API request failed");
       const blob = await response.blob();
       const fileName = `${Date.now()}_thumb.jpg`;
-      imageUrl = await uploadBlobToBunny(blob, fileName);
+      imageUrl = await uploadBlobToBunny(blob, fileName); // Upload to Bunny.net
     } 
     else if (videoPreview) {
       const canvas = document.createElement('canvas');
@@ -702,6 +635,12 @@ const generateThumbnailFromTimecode = async () => {
         video.onloadedmetadata = resolve;
         video.onerror = () => reject(new Error("Failed to load video"));
       });
+
+      // Convert timecode to seconds
+      const timeParts = time.split(':').map(Number);
+      const timeInSeconds = timeParts.length === 2 
+        ? timeParts[0] * 60 + timeParts[1] 
+        : timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
 
       // Seek to timecode
       video.currentTime = timeInSeconds;
@@ -723,7 +662,7 @@ const generateThumbnailFromTimecode = async () => {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert to image URL
+      // Convert to image and upload to Bunny.net
       imageUrl = await new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
           if (!blob) {
@@ -737,15 +676,15 @@ const generateThumbnailFromTimecode = async () => {
           } catch (error) {
             reject(error);
           }
-        }, 'image/jpeg', 0.9); // 90% quality
+        }, 'image/jpeg', 0.9);
       });
     }
 
     if (imageUrl) {
-      setVideoThumbnail(imageUrl);
-      setImagePreview(null);
+      setVideoThumbnail(imageUrl); // This is now the Bunny.net URL
+      setImagePreview(imageUrl);
       setStaticImage(null);
-      setThumbnailSource('default');
+      setThumbnailSource('timecode');
     }
 
   } catch (error) {
@@ -884,21 +823,7 @@ const handleFileUpload = async (event) => {
 };
 
 const onSubmit = async (data) => {
-
-
-
-  console.log(data.youtubeLink, "kuryme er youtube er heda")
-
-  // if(data.youtubeLink.length < 1){
-
-
-
-  //   // toast.error("Video is Required")
-  //     return;
-      
-
-  //   }
-
+  console.log(data.youtubeLink, "youtube link");
 
   if (isUploading) return;
   
@@ -932,12 +857,13 @@ const onSubmit = async (data) => {
 
     // Handle custom image upload if selected
     if (thumbnailSource === 'custom' && selectedImageFile) {
-      const endpoint = `https://${REGION_PREFIX}storage.bunnycdn.com/${STORAGE_ZONE}/${selectedImageFile.name}`;
+      const fileName = `${Date.now()}_${selectedImageFile.name}`;
+      const endpoint = `https://storage.bunnycdn.com/${STORAGE_ZONE}/${fileName}`;
       
       const { status } = await axios.put(endpoint, selectedImageFile, {
         headers: {
           AccessKey: ACCESS_KEY,
-          "Content-Type": selectedImageFile.type || "application/octet-stream",
+          "Content-Type": selectedImageFile.type || "image/jpeg",
         },
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -946,52 +872,50 @@ const onSubmit = async (data) => {
       });
 
       if (status === 201) {
-        data.imageUrl = `https://shot-deck.b-cdn.net/${selectedImageFile.name}`;
+        data.imageUrl = `https://shot-deck.b-cdn.net/${fileName}`;
       }
     }
 
-    // Handle timecode thumbnail
+    // Handle timecode thumbnail (already uploaded to Bunny.net in generateThumbnailFromTimecode)
     if (thumbnailSource === 'timecode' && videoThumbnail) {
-      data.imageUrl = videoThumbnail;
+      data.imageUrl = videoThumbnail; // This is already Bunny.net URL
     } 
-    // Handle YouTube/Vimeo thumbnail
-    else if (thumbnailSource === 'youtube') {
+    // Handle default YouTube/Vimeo thumbnail
+    else if (thumbnailSource === 'default') {
       if (isYouTubeLink) {
         const videoId = getYouTubeId(data.youtubeLink);
         data.imageUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       } else if (isVimeoLink) {
-        if (videoThumbnail) {
-          data.imageUrl = videoThumbnail;
-        } else {
-          data.imageUrl = null;
-        }
+        const videoId = getVimeoId(data.youtubeLink);
+        data.imageUrl = `https://vumbnail.com/${videoId}.jpg`;
+      } else if (videoPreview && videoThumbnail) {
+        // For local videos, use the first frame we generated
+        data.imageUrl = videoThumbnail;
       }
     }
 
-    // Add timecodes if any
+    // Add timecodes if any (they already have Bunny.net URLs)
     if (timecodes.length > 0) {
       data.timecodes = timecodes;
     }
 
-    data.thumbnailTimecode = thumbnailTimecode;
+    data.imageUrlThubnail = imageUrlThubnail;
     data.thumbnailSource = thumbnailSource;
 
-
-    if(!data.youtubeLink){
-
-      // return alert("Video is Required")
-      
-
+    // Validate required fields
+    if (!data.youtubeLink && !selectedVideo) {
+      Swal.fire({
+        title: "Error",
+        text: "Video is required",
+        icon: "error",
+      });
+      return;
     }
 
     // Submit the form data
-    console.log(data, "kiryemdfas")
-
-
-    if(!data.youtubeLink){
-      // return toast.error("Video is Required")
-    }
+    console.log("Submitting data:", data);
     const resp = await axiosInstance.post(`${base_url}/shot/create`, data);
+    console.log("Response:", resp);
 
     Swal.fire({
       title: "Shot added successfully",
@@ -999,10 +923,7 @@ const onSubmit = async (data) => {
       icon: "success",
     });
 
-
-
     resetForm();
-    window.location.reload();
   } catch (error) {
     console.error("Upload error:", error);
     Swal.fire({
@@ -1729,7 +1650,7 @@ useEffect(() => {
           type="text"
           placeholder="e.g. 2:15"
           className="flex-1 bg-gray-700 border mt-2 border-gray-600 rounded pl-2 max-w-[100px] py-1 text-xs text-white placeholder-gray-400 focus:outline-none"
-          value={thumbnailTimecode}
+          value={imageUrlThubnail}
           onChange={(e) => setThumbnailTimecode(e.target.value)}
         />
       </div>
@@ -1737,7 +1658,7 @@ useEffect(() => {
         type="button"
         onClick={generateThumbnailFromTimecode}
         className="bg-blue-500 hover:bg-blue-600 mt-4 text-white text-xs font-medium px-4 py-1 rounded"
-        disabled={isUploading || !thumbnailTimecode}
+        disabled={isUploading || !imageUrlThubnail}
       >
         {generateLoading ? 'Loading...' : 'Generate'}
       </button>

@@ -433,7 +433,7 @@ const filteredData = (isDetails
   }
 
   return (
-    <div className='md:px-8 py-16 mt-8 bg-gradient-to-b from-gray-900 to-black min-h-screen'>
+    <div className='md:px-8 py-16 mt-8 bg-gradient-to-b from-gray-900  min-h-screen'>
 
 
 

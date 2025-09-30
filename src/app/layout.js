@@ -71,7 +71,7 @@ export default function RootLayout({ children }) {
          
 {/*          
 <SmonthScrollingProvider> */}
-         <div className="min-h-screen bg-gray-900">
+         <div className=" overflow-hidden">
                   {children}
          </div>
      

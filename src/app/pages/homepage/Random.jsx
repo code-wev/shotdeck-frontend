@@ -317,42 +317,37 @@ function getVideoThumbnail(url, timecode = '0:00') {
     return null;
   };
 
-  const handleTimecodeClick = (timeString, videoUrl, shotId) => {
-    const timeParts = timeString.split(':');
-    const seconds = (+timeParts[0]) * 60 + (+timeParts[1]);
-    
-    const videoInfo = videoRefs.current[shotId];
-    if (!videoInfo || !videoInfo.element) return;
-
-    const videoElement = videoInfo.element;
-
-    try {
-      if (videoUrl.includes('youtu')) {
-        const videoId = getYouTubeVideoId(videoUrl);
-        if (videoId) {
-          videoElement.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&start=${seconds}`;
-        }
-      } else if (videoUrl.includes('vimeo.com')) {
-        const player = new Vimeo.Player(videoElement);
-        player.setCurrentTime(seconds).then(() => {
-          player.play();
-        });
-      } else {
-        if (videoElement.tagName === 'VIDEO') {
-          videoElement.currentTime = seconds;
-          videoElement.play().catch(err => {
-            console.log('Attempting muted playback');
-            videoElement.muted = true;
-            videoElement.play();
-          });
-        }
-      }
-      setPlayingVideoId(shotId);
-      videoInfo.isPlaying = true;
-    } catch (error) {
-      console.error('Error handling timecode click:', error);
+function handleTimecodeClick(timeString, videoUrl, time) {
+  const timeParts = timeString.split(':');
+  const seconds = (+timeParts[0]) * 60 + (+timeParts[1]);
+  
+  if (videoUrl.includes('youtu')) {
+    // YouTube video
+    const videoPlayer = document.getElementById('video-player');
+    if (videoPlayer) {
+      const embedUrl = getYouTubeEmbedUrl(videoUrl);
+      videoPlayer.src = `${embedUrl}?start=${seconds}&autoplay=1`;
     }
-  };
+  } else if (videoUrl.includes('vimeo.com')) {
+    // Vimeo video
+      const videoPlayer = document.getElementById('video-player');
+    if (videoPlayer && videoPlayer.contentWindow) {
+      videoPlayer.contentWindow.postMessage({
+        method: 'setCurrentTime',
+        value: seconds
+      }, 'https://player.vimeo.com');
+    }
+  } else {
+    // Cloudinary or direct video
+    const timePartsForCLoudinary = time.split(':');
+    const secondsForCloudinary = (+timePartsForCLoudinary[0]) * 60 + (+timePartsForCLoudinary[1]);
+    const videoPlayer = document.getElementById('cloudinary-video');
+    if (videoPlayer) {
+      videoPlayer.currentTime = secondsForCloudinary;
+      videoPlayer.play();
+    }
+  }
+}
 
   const getYouTubeVideoId = (url) => {
     try {
@@ -550,23 +545,22 @@ function getVideoThumbnail(url, timecode = '0:00') {
     return null;
   };
 
-  const getYouTubeEmbedUrl = (url, startTime = 0) => {
+   function getYouTubeEmbedUrl(url) {
     try {
       const yt = new URL(url);
-      let videoId;
       if (yt.hostname.includes('youtube.com') && yt.pathname.includes('/shorts/')) {
-        videoId = yt.pathname.split('/')[2];
+        const videoId = yt.pathname.split('/')[2];
+        return `https://www.youtube.com/embed/${videoId}`;
       } else if (yt.hostname.includes('youtu.be')) {
-        videoId = yt.pathname.split('/')[1];
+        return `https://www.youtube.com/embed/${yt.pathname.split('/')[1]}`;
       } else if (yt.hostname.includes('youtube.com')) {
-        videoId = yt.searchParams.get('v');
+        return `https://www.youtube.com/embed/${yt.searchParams.get('v')}`;
       }
-      return videoId ? `https://www.youtube.com/embed/${videoId}?start=${startTime}` : null;
     } catch (err) {
-      console.error('Error parsing YouTube URL:', err);
       return null;
     }
-  };
+    return null;
+  }
 
   if (isLoading && allShots.length === 0) {
     return (
@@ -585,7 +579,7 @@ function getVideoThumbnail(url, timecode = '0:00') {
   }
 
   return (
-    <div className="pt-28 min-h-screen">
+    <div className="pt-8 max-h-screen overfh min-h-screen ">
       <div className="flex">
         <div className="absolute top-[90.5px] md:top-24 z-30 right-12 md:right-12">
           <button
@@ -1138,7 +1132,7 @@ function getVideoThumbnail(url, timecode = '0:00') {
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 0.9 }}
     transition={{ duration: 0.3 }}
-    className="relative h-full w-full rounded-xl p-8  shadow-lg bg-[#1a1a1a] flex flex-col border border-gray-700"
+    className="relative h-full w-full overflow-y-scroll scrollbar-thin-gray  rounded-xl p-8  shadow-lg bg-[#1a1a1a] flex flex-col border border-gray-700"
   >
     {/* Video container */}
 
@@ -1150,7 +1144,7 @@ function getVideoThumbnail(url, timecode = '0:00') {
   <div>
 
 
-    <div className='py-2'>
+    <div className='py-2 '>
 
 
 

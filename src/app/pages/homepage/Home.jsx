@@ -22,20 +22,25 @@ export default function HomePage() {
     <div>
      <Cover/>
      {/* <Treanding/> */}
-   <div className='max-w-[1820px] mx-auto'>
-      <TrendingShots/>
+   <div >
+      {/* <TrendingShots/>
      <About/>
-     <FAQ/>
+     <FAQ/> */}
      {/* <CinematographersSpotlight/> */}
  {
-  user.status === 'authenticated' &&     <MySHot/> 
+  // user.status === 'authenticated' &&     <MySHot/> 
  }
     </div>
-<div className=''>
+
+
+
+
+
+{/* <div className=''>
    {
   user.status === 'authenticated' &&    <MyCollection/>
  }
-</div>
+</div> */}
 
 
     </div>

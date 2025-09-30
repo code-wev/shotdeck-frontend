@@ -50,7 +50,8 @@ const [searchTag, setSearchTag] = useState(
 console.log(searchTag, 'this is search tag')
 
 
-const userRole= user?.data?.user?.role;
+// const userRole= user?.data?.user?.role;
+const userRole= "admin"
 console.log(userRole, 'Kuryem er h role')
   const ids = user?.data?.user?.id;
   const {data:myShotData, refetch } = useGetMyShotQuery(ids);
@@ -1811,7 +1812,7 @@ const filterHandler = (e, groupName, value) => {
     <AnimatePresence>
   {modalIsOpen && selectedShot && (
     <motion.div
-      className={"fixed  inset-0   bg-black bg-opacity-80 z-[998]  mx-auto no-scrollbar flex justify-center items-center "}
+      className={"fixed inset-0 z-[998] mx-auto no-scrollbar flex justify-center items-center bg-black/80 "}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

@@ -11,6 +11,7 @@ import { useGetSettingQuery } from '@/redux/api/shot';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,6 +20,9 @@ export default function Cover() {
   const coverPhotos = data?.data[0]?.coverphoto || [];
   const [selectedCoverPhoto, setSelectedCoverPhoto] = useState(null);
   const pathname = usePathname();
+  const user = useSession();
+  console.log(user.status, "User")
+  
 
   const bgRef = useRef(null); // Ref for background div
 
@@ -72,7 +76,7 @@ export default function Cover() {
   return (
     <div
       ref={bgRef}
-      className="w-full bg-cover bg-center bg-no-repeat bg-fixed min-h-screen"
+      className="w-full bg-cover bg-center m bg-no-repeat bg-fixed   min-h-screen"
       style={{
         backgroundImage: `url(${ coverImg.src})`,
         backgroundPosition: '50% 0%',
@@ -136,7 +140,7 @@ export default function Cover() {
   {cardData.map((data, idx) => (
     <div
       key={idx}
-      className='p-6 rounded flex flex-col justify-between bg-[rgba(0,0,0,0.37)]  w-full xl:w-[30%]' // fixed height & responsive width
+      className={`p-6 rounded ${data.button === 'Sign Up' && user.status ==="unauthenticated" || user.status === "loading" ? "hidden" : ''} flex  flex-col justify-between bg-[rgba(0,0,0,0.37)]  w-full xl:w-[30%]`} // fixed height & responsive width
     >
       <div>
         <h4 className='text-3xl text-left encode-sans'>{data.title}</h4>
@@ -180,7 +184,7 @@ const cardData = [
   {
     title:'Help FX - References',
     subtitle:"This website is here for the FX community, free for everyone — but it does cost time and money to keep it running.If it has helped you, consider supporting it by donating through the link below.Your support helps keep it alive.",
-    button:"donation",
+    button:"Donation",
     link:"/donation",
     endText: "Thank you!"
   },
